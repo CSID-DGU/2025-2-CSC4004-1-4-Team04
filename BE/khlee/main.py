@@ -1,7 +1,7 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Body
 import os
 from video_analyzer import analyze_video
-from feedback_generator import generate_feedback
+from feedback_generator import generate_feedback_from_analysis
 
 app = FastAPI()
 
@@ -29,12 +29,24 @@ async def analyze_video_api(file: UploadFile = File(...)):
 
     return {"filename": file.filename, "result": result}
 
-@app.post("/feedback/gpt")
-def feedback_api(data: dict):
+
+@app.post("/feedback/full")
+def feedback_full_api(analysis_data: dict = Body(...)):
     """
-    시선/자세 분석 결과(JSON)를 입력받아 GPT 피드백 생성
+    video_analyzer 결과(JSON 전체)를 입력받아 GPT 피드백 생성 및 Markdown 저장
     """
-    gaze = data.get("gaze_center_ratio", 0.0)
-    posture = data.get("posture_stability", 0.0)
-    feedback = generate_feedback(gaze, posture)
-    return {"feedback": feedback}
+    feedback = generate_feedback_from_analysis(analysis_data)
+
+    # ✅ Markdown 파일로 저장
+    output_dir = "feedback_reports"
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, "feedback.md")
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(feedback)
+
+    return {
+        "message": "✅ Feedback report successfully generated.",
+        "file_path": output_path,
+        "feedback_preview": feedback[:300] + "..."  # 미리보기
+    }
