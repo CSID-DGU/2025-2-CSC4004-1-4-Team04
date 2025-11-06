@@ -1,7 +1,16 @@
 from fastapi import FastAPI, UploadFile, File, Body
 import os
 from video_analyzer import analyze_video
-from feedback_generator import generate_feedback_from_analysis
+# from feedback_generator import generate_feedback_from_analysis
+
+# FireBase 모듈 가져오기
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+cred = credentials.Certificate("BE/khlee/serviceAccountKey.json") 
+firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 app = FastAPI()
 
@@ -12,7 +21,7 @@ def root():
 @app.post("/analyze/video")
 async def analyze_video_api(file: UploadFile = File(...)):
     """
-    업로드된 영상 파일을 임시 저장 후 분석하고 결과를 반환합니다.
+    업로드된 영상 파일을 임시 저장 후 분석하고 DB에 저장한 뒤 결과를 반환합니다.
     """
     temp_path = f"temp_{file.filename}"
     contents = await file.read()
@@ -26,27 +35,50 @@ async def analyze_video_api(file: UploadFile = File(...)):
 
     # 임시 파일 삭제
     os.remove(temp_path)
+    
+    try:
+        # 'analysis_results' 폴더에 새 문서 작성
+        doc_ref = db.collection(u'analysis_results').document() 
+        doc_ref.set({
+            u'filename': file.filename,
+            u'analysis_data': result, # video_analyzer가 만든 결과
+            u'created_at': firestore.SERVER_TIMESTAMP
+        })
+        # DB에 저장된 고유 ID를 결과에 포함시켜 반환
+        result['document_id'] = doc_ref.id
+    except Exception as e:
+        result['db_error'] = f"DB 저장 실패: {str(e)}"
 
     return {"filename": file.filename, "result": result}
 
 
-@app.post("/feedback/full")
-def feedback_full_api(analysis_data: dict = Body(...)):
-    """
-    video_analyzer 결과(JSON 전체)를 입력받아 GPT 피드백 생성 및 Markdown 저장
-    """
-    feedback = generate_feedback_from_analysis(analysis_data)
+# @app.post("/feedback/full")
+# def feedback_full_api(analysis_data: dict = Body(...)):
+#     """
+#     video_analyzer 결과(JSON 전체)를 입력받아 GPT 피드백 생성 및 FireBase DB에 업데이트
+#     """
+#     feedback = generate_feedback_from_analysis(analysis_data)
 
-    # ✅ Markdown 파일로 저장
-    output_dir = "feedback_reports"
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, "feedback.md")
+#     # analyze/video에서 보낸 'result' 객체 안의 'document_id'를 찾음
+#     doc_id = analysis_data.get('result', {}).get('document_id')
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(feedback)
-
-    return {
-        "message": "✅ Feedback report successfully generated.",
-        "file_path": output_path,
-        "feedback_preview": feedback[:300] + "..."  # 미리보기
-    }
+#     try:
+#         if doc_id:
+#             # ID가 있다면, 해당 문서를 찾아서 피드백 내용을 업데이트
+#             doc_ref = db.collection(u'analysis_results').document(doc_id)
+#             doc_ref.update({
+#                 u'feedback_markdown': feedback, 
+#                 u'feedback_generated_at': firestore.SERVER_TIMESTAMP
+#             })
+#             return {
+#                 "message": "✅ Feedback generated and saved to DB.",
+#                 "document_id": doc_id
+#             }
+#         else:
+#             # ID가 없는 예외 상황 처리
+#             return {
+#                 "message": "⚠️ Feedback generated, but document_id was missing. Not saved to DB."
+#             }
+            
+#     except Exception as e:
+#         return {"message": f"DB 저장 실패: {str(e)}"}
