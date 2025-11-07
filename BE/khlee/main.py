@@ -7,7 +7,7 @@ from video_analyzer import analyze_video
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-cred = credentials.Certificate("BE/khlee/serviceAccountKey.json") 
+cred = credentials.Certificate("serviceAccountKey.json") 
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
