@@ -11,6 +11,6 @@ venv/
 .vscode/
 
 # FIRESTORE DB
-serviceAccountKey.json
+BE/khlee/serviceAccountKey.json 
 *.pem
 *.p12
