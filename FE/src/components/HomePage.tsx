@@ -123,9 +123,9 @@ export function HomePage({ onNavigate }: HomePageProps) {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-4">
               <Brain className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl mb-3 text-white">AI 실시간 분석</h3>
+            <h3 className="text-xl mb-3 text-white">AI 분석</h3>
             <p className="text-white/60">
-              음성, 표정, 제스처를 실시간으로 분석하여 즉각적인 피드백을 제공합니다
+              음성, 표정, 제스처를 분석하여 즉각적인 피드백을 제공합니다
             </p>
           </motion.div>
 

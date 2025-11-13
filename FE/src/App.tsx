@@ -5,12 +5,13 @@ import { ResultsPage } from './components/ResultsPage';
 import { MyPage } from './components/MyPage';
 import { AuthPage } from './components/AuthPage';
 import { ProtectedLayout } from './components/ProtectedLayout';
+import { LoadingPage } from './components/LoadingPage'; // ✅ 추가
 import { Mic, Home, User, LogOut } from 'lucide-react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { getUserProfile } from './lib/firestore';
 
-type Page = 'home' | 'record' | 'results' | 'mypage' | 'auth';
+type Page = 'home' | 'record' | 'results' | 'mypage' | 'auth' | 'loading'; // ✅ 'loading' 추가
 
 interface UserData {
   uid: string;
@@ -25,25 +26,22 @@ export default function App() {
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
+  // 🔹 Firebase 로그인 상태 감시
   useEffect(() => {
-    // Firebase 인증 상태 관찰
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Firestore에서 사용자 프로필 가져오기
         const userProfile = await getUserProfile(firebaseUser.uid);
-        
         setUser({
           uid: firebaseUser.uid,
           email: firebaseUser.email || '',
           name: userProfile?.displayName || firebaseUser.displayName || '',
-          photoURL: userProfile?.photoURL || firebaseUser.photoURL || undefined
+          photoURL: userProfile?.photoURL || firebaseUser.photoURL || undefined,
         });
       } else {
         setUser(null);
       }
       setIsLoadingAuth(false);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -62,22 +60,10 @@ export default function App() {
     }
   };
 
-  const handleNavigateToMyPage = () => {
-    if (user) {
-      setCurrentPage('mypage');
-    } else {
-      setCurrentPage('auth');
-    }
-  };
+  const handleNavigateToMyPage = () => setCurrentPage(user ? 'mypage' : 'auth');
+  const handleNavigateToRecord = () => setCurrentPage(user ? 'record' : 'auth');
 
-  const handleNavigateToRecord = () => {
-    if (user) {
-      setCurrentPage('record');
-    } else {
-      setCurrentPage('auth');
-    }
-  };
-
+  // 🔹 페이지 렌더링
   const renderPage = () => {
     if (isLoadingAuth) {
       return (
@@ -93,29 +79,41 @@ export default function App() {
     switch (currentPage) {
       case 'home':
         return <HomePage onNavigate={setCurrentPage} />;
+
       case 'record':
         return (
           <ProtectedLayout isAuthenticated={!!user} onNavigateToAuth={() => setCurrentPage('auth')}>
-            <RecordPage user={user} onNavigate={setCurrentPage} onComplete={(results) => {
-              setAnalysisResults(results);
-              setCurrentPage('results');
-            }} />
+            <RecordPage
+              user={user}
+              onNavigate={setCurrentPage}
+              onComplete={(results) => {
+                setAnalysisResults(results);
+                setCurrentPage('results');
+              }}
+            />
           </ProtectedLayout>
         );
+
+      case 'loading': // ✅ 로딩 페이지 추가
+        return <LoadingPage />;
+
       case 'results':
         return (
           <ProtectedLayout isAuthenticated={!!user} onNavigateToAuth={() => setCurrentPage('auth')}>
             <ResultsPage user={user} results={analysisResults} onNavigate={setCurrentPage} />
           </ProtectedLayout>
         );
+
       case 'mypage':
         return (
           <ProtectedLayout isAuthenticated={!!user} onNavigateToAuth={() => setCurrentPage('auth')}>
             <MyPage user={user} onNavigate={setCurrentPage} />
           </ProtectedLayout>
         );
+
       case 'auth':
         return <AuthPage onLogin={handleLogin} onCancel={() => setCurrentPage('home')} />;
+
       default:
         return <HomePage onNavigate={setCurrentPage} />;
     }
@@ -123,48 +121,54 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* 상단 네비게이션 바 */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <button 
+            {/* 로고 */}
+            <button
               onClick={() => setCurrentPage('home')}
               className="text-white flex items-center gap-2"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-green-500" />
               <span className="text-xl">SpeakFlow</span>
             </button>
-            
+
+            {/* 네비 버튼 */}
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setCurrentPage('home')}
                 className={`px-4 py-2 rounded-lg transition-all ${
-                  currentPage === 'home' 
-                    ? 'bg-white/20 text-white' 
+                  currentPage === 'home'
+                    ? 'bg-white/20 text-white'
                     : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <Home className="w-5 h-5" />
               </button>
+
               <button
                 onClick={handleNavigateToRecord}
                 className={`px-4 py-2 rounded-lg transition-all ${
-                  currentPage === 'record' 
-                    ? 'bg-white/20 text-white' 
+                  currentPage === 'record'
+                    ? 'bg-white/20 text-white'
                     : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <Mic className="w-5 h-5" />
               </button>
+
               <button
                 onClick={handleNavigateToMyPage}
                 className={`px-4 py-2 rounded-lg transition-all ${
                   currentPage === 'mypage' || currentPage === 'auth'
-                    ? 'bg-white/20 text-white' 
+                    ? 'bg-white/20 text-white'
                     : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <User className="w-5 h-5" />
               </button>
+
               {user && (
                 <button
                   onClick={handleLogout}
@@ -179,9 +183,8 @@ export default function App() {
         </div>
       </nav>
 
-      <main className="flex-1 pt-16">
-        {renderPage()}
-      </main>
+      {/* 메인 페이지 영역 */}
+      <main className="flex-1 pt-16">{renderPage()}</main>
     </div>
   );
 }

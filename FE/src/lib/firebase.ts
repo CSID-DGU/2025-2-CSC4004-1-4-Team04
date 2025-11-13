@@ -1,27 +1,24 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage'; // ✅ 추가
 
-// Firebase 설정
-// TODO: Firebase Console에서 프로젝트를 생성하고 아래 값을 교체하세요
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBrYQhIUk_KkjDViOORGL9CDo-OOc-auEc",
+  authDomain: "csc4004-1-4-team04.firebaseapp.com",
+  projectId: "csc4004-1-4-team04",
+  storageBucket: "csc4004-1-4-team04.firebasestorage.app", // ✅ Storage 버킷
+  messagingSenderId: "195272516733",
+  appId: "1:195272516733:web:5b008b9bd5f7c35462bd14"
 };
 
-// Firebase 초기화
 const app = initializeApp(firebaseConfig);
 
-// Firebase 서비스
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app); // ✅ Storage 추가
 export const googleProvider = new GoogleAuthProvider();
 
-// Google OAuth 설정
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });

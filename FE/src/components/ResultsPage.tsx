@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { TrendingUp, Clock, Sparkles, ArrowRight, Award, CheckCircle2 } from 'lucide-react';
 import { Button } from './ui/button';
 
+
 type Page = 'home' | 'record' | 'results' | 'mypage';
 
 interface ResultsPageProps {
