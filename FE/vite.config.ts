@@ -6,6 +6,7 @@
 
   export default defineConfig({
     plugins: [react(), tailwindcss()],
+    base: '/2025-2-CSC4004-1-4-Team04/', 
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
