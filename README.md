@@ -32,6 +32,9 @@
   </tr>
 </table>
 <hr/>
+<br>
+<br>
+
 <h1 align="center">🎤 SpeakFlow – AI 발표 코치</h1>
 
 <p align="center">
@@ -39,6 +42,7 @@
   음성 · 내용 · 영상 데이터를 실시간 분석하여 피드백 제공
 </p>
 
+### 폴더 구조
 ```
 📦 2025-2-CSC4004-1-4-Team04
 ├── 🖥️ FE/         
@@ -69,6 +73,7 @@
 ├── ❗ .gitignore
 └── 📚 docs/
 ```
+
 
 ## 🛠 Tech Stack
 ### Frontend
