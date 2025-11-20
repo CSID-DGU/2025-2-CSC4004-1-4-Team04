@@ -2,10 +2,87 @@
 
 ## 👨‍💻 팀원 소개
 
-| 이름 | 역할 | GitHub |
-|------|------|--------|
-| 한지예 | Frontend | [@kelly0819](https://github.com/kelly0819) |
-| 이권형 | Backend | [@kannikii](https://github.com/kannikii) |
-| 박중헌 | Backend | [@pjh21028](https://github.com/pjh21028) |
-| 장길빈 | Backend | [@rlfqls](https://github.com/rlfqls) |
-| 스팡위 | Backend | — |
+<table>
+  <tr>
+    <td align="center" width="150px">
+      <img src="https://github.com/kelly0819.png" width="100px;" style="border-radius:50%;"/><br/>
+      <sub><b>한지예</b></sub><br/>
+      <a href="https://github.com/kelly0819">@kelly0819</a>
+    </td>
+    <td align="center" width="150px">
+      <img src="https://github.com/kannikii.png" width="100px;" style="border-radius:50%;"/><br/>
+      <sub><b>이권형</b></sub><br/>
+      <a href="https://github.com/kannikii">@kannikii</a>
+    </td>
+    <td align="center" width="150px">
+      <img src="https://github.com/pjh21028.png" width="100px;" style="border-radius:50%;"/><br/>
+      <sub><b>박중헌</b></sub><br/>
+      <a href="https://github.com/pjh21028">@pjh21028</a>
+    </td>
+    <td align="center" width="150px">
+      <img src="https://github.com/rlfqls.png" width="100px;" style="border-radius:50%;"/><br/>
+      <sub><b>장길빈</b></sub><br/>
+      <a href="https://github.com/rlfqls">@rlfqls</a>
+    </td>
+    <td align="center" width="150px">
+      <img src="https://avatars.githubusercontent.com/u/0?v=4" width="100px;" style="border-radius:50%; opacity:0.4;"/><br/>
+      <sub><b>스팡위</b></sub><br/>
+      <span style="color: gray;">No GitHub</span>
+    </td>
+  </tr>
+</table>
+<hr/>
+<h1 align="center">🎤 SpeakFlow – AI 발표 코치</h1>
+
+<p align="center">
+  AI 기반 발표 분석 플랫폼<br/>
+  음성 · 내용 · 영상 데이터를 실시간 분석하여 피드백 제공
+</p>
+
+📦 2025-2-CSC4004-1-4-Team04
+├── 🖥️ FE/         
+│   ├── 🎨 public/
+│   ├── 📂 src/
+│   │   ├── 🔌 apis/
+│   │   ├── 🧩 components/
+│   │   ├── 🧪 hooks/
+│   │   ├── 🔧 lib/
+│   │   ├── 🧪 mocks/
+│   │   ├── 📄 pages/
+│   │   ├── 🎨 styles/
+│   ├── ⚙️ vite.config.ts
+│   ├── 🧾 package.json
+│   └── 🔐 .env  (ignored)
+│
+├── 🧠 BE/
+│   ├── 📂 app/
+│   │   ├── 🌐 api/
+│   │   ├── ⚙️ core/
+│   │   ├── 🗄️ models/
+│   │   ├── 🔥 services/
+│   │   └── 🚀 main.py
+│   ├── 🧾 requirements.txt
+│   └── 🔐 .env (ignored)
+│
+├── 📄 README.md
+├── ❗ .gitignore
+└── 📚 docs/
+
+## 🛠 Tech Stack
+### Frontend
+<p>
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/MediaPipe-FF5722?style=for-the-badge&logo=Google&logoColor=white"/>
+  <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=PyTorch&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=Vercel&logoColor=white"/>
+</p>
+
+### Backend 
+<p>
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/MediaPipe-FF5722?style=for-the-badge&logo=Google&logoColor=white"/>
+  <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=PyTorch&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=Vercel&logoColor=white"/>
+</p>
