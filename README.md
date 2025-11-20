@@ -38,7 +38,7 @@
   AI 기반 발표 분석 플랫폼<br/>
   음성 · 내용 · 영상 데이터를 실시간 분석하여 피드백 제공
 </p>
-
+```
 📦 2025-2-CSC4004-1-4-Team04
 ├── 🖥️ FE/         
 │   ├── 🎨 public/
@@ -67,7 +67,7 @@
 ├── 📄 README.md
 ├── ❗ .gitignore
 └── 📚 docs/
-
+```
 ## 🛠 Tech Stack
 ### Frontend
 <p>
