@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import datetime
 from functools import partial
 from fastapi import FastAPI, UploadFile, File, Form, Body
 from fastapi.responses import StreamingResponse
@@ -12,7 +13,7 @@ from stt_processor import (
     get_stt_progress,
 )
 from feedback_generator import generate_feedback_from_analysis
-from voice_feedback_api import router as voice_feedback_router
+from voice_feedback_api import router as voice_feedback_router, generate_combined_feedback_report
 
 # Firebase (RTDB)
 import firebase_admin
@@ -28,14 +29,33 @@ app = FastAPI()
 app.include_router(voice_feedback_router)
 
 
-def save_video_analysis_file(result: dict, filename: str) -> str:
-    """비디오 분석 결과를 로컬 JSON 파일로 저장하고 경로를 반환합니다."""
-    output_dir = Path("video_analysis_reports")
-    output_dir.mkdir(exist_ok=True)
+def save_video_analysis_file(result: dict, filename: str, output_dir: Path) -> str:
+    """비디오 분석 결과를 지정한 디렉터리에 저장하고 경로를 반환합니다."""
+    output_dir.mkdir(parents=True, exist_ok=True)
     stem = Path(filename).stem
     output_path = output_dir / f"{stem}_analysis.json"
     output_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     return str(output_path)
+
+
+def save_combined_analysis_file(video_result: dict, stt_result: dict, filename: str, output_dir: Path) -> str:
+    """영상+음성 결과를 하나의 JSON으로 묶어 저장."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stem = Path(filename).stem
+    output_path = output_dir / f"{stem}_combined.json"
+    combined = {"video_result": video_result, "stt_result": stt_result}
+    output_path.write_text(json.dumps(combined, ensure_ascii=False, indent=2), encoding="utf-8")
+    return str(output_path)
+
+
+def create_run_dirs(run_id: str):
+    base = Path("results") / run_id
+    video_dir = base / "video"
+    audio_dir = base / "audio"
+    combined_dir = base / "combined"
+    for d in (video_dir, audio_dir, combined_dir):
+        d.mkdir(parents=True, exist_ok=True)
+    return base, video_dir, audio_dir, combined_dir
 
 
 @app.get("/")
@@ -113,17 +133,26 @@ async def analyze_speech_api(file: UploadFile = File(...)):
     return {"message": f"✅ STT 완료: {file.filename}", "result": stt_result}
 
 
-@app.post("/analyze/full")
-async def analyze_full_api(file: UploadFile = File(...)):
+@app.post("/analyze/full-feedback")
+async def analyze_full_feedback_api(file: UploadFile = File(...)):
     """
-    하나의 영상으로 비디오 분석 + STT 분석을 동시에 수행합니다.
+    영상·음성 동시 분석 후 OpenRouter LLM으로 통합 피드백까지 생성합니다.
     """
     original_filename = file.filename
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    base_dir, video_dir, audio_dir, combined_dir = create_run_dirs(run_id)
     temp_path = Path(f"temp_full_{original_filename}")
     temp_path.write_bytes(await file.read())
 
     loop = asyncio.get_event_loop()
-    stt_callable = partial(process_single_video, temp_path, output_basename=Path(original_filename).stem)
+    stt_callable = partial(
+        process_single_video,
+        temp_path,
+        output_basename=Path(original_filename).stem,
+        output_audio_dir=audio_dir,
+        output_json_dir=audio_dir,
+        upload_to_firebase=False,  # 통합 API에서는 바로 피드백만 반환
+    )
 
     try:
         video_task = loop.run_in_executor(None, analyze_video, str(temp_path))
@@ -133,13 +162,25 @@ async def analyze_full_api(file: UploadFile = File(...)):
         if temp_path.exists():
             temp_path.unlink()
 
-    video_file_path = save_video_analysis_file(video_result, original_filename)
+    video_file_path = save_video_analysis_file(video_result, original_filename, video_dir)
+
+    feedback_payload = generate_combined_feedback_report(
+        video_result=video_result,
+        stt_result=stt_result,
+        output_name=f"full_feedback_{Path(original_filename).stem}.md",
+    )
+    combined_file_path = save_combined_analysis_file(video_result, stt_result, original_filename, combined_dir)
 
     return {
-        "message": f"✅ 영상·음성 분석 완료: {original_filename}",
+        "message": f"✅ 영상·음성 분석 및 피드백 생성 완료: {original_filename}",
+        "run_id": run_id,
         "video_result": video_result,
         "stt_result": stt_result,
         "video_analysis_file": video_file_path,
+        "stt_output_dir": str(audio_dir),
+        "combined_analysis_file": combined_file_path,
+        "feedback_file": feedback_payload["file_path"],
+        "feedback_preview": feedback_payload["feedback_preview"],
     }
 
 
