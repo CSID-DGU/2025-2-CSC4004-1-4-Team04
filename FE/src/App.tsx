@@ -28,6 +28,7 @@ export default function App() {
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');  
+  const [selectedPresentation, setSelectedPresentation] = useState<any>(null);
 
   // 🔹 Firebase 로그인 상태 감시
   useEffect(() => {
@@ -104,14 +105,22 @@ export default function App() {
       case 'results':
         return (
           <ProtectedLayout isAuthenticated={!!user} onNavigateToAuth={() => setCurrentPage('auth')}>
-            <ResultsPage user={user} results={analysisResults} onNavigate={setCurrentPage} />
+            <ResultsPage user={user} results={analysisResults || selectedPresentation} onNavigate={setCurrentPage} />
           </ProtectedLayout>
         );
 
       case 'mypage':
         return (
           <ProtectedLayout isAuthenticated={!!user} onNavigateToAuth={() => setCurrentPage('auth')}>
-            <MyPage user={user} onNavigate={setCurrentPage} />
+            <MyPage
+              user={user}
+              onNavigate={setCurrentPage}
+              onSelectPresentation={(p) => {
+                setSelectedPresentation(p);
+                setAnalysisResults(p);
+                setCurrentPage('results');
+              }}
+            />
           </ProtectedLayout>
         );
 

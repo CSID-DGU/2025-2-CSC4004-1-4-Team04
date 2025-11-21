@@ -8,7 +8,7 @@ os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 import torch
 import whisper
 from moviepy.editor import VideoFileClip
-from firebase_admin import credentials, db
+from firebase_admin import credentials, firestore
 import firebase_admin
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -26,7 +26,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_CRED_PATH = BASE_DIR / "serviceAccountKey.json"
 
-FIREBASE_DATABASE_URL = os.getenv("FIREBASE_DATABASE_URL")
+FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
 FIREBASE_USER_ID = os.getenv("FIREBASE_USER_ID", "default_user")
 INPUT_VIDEO_DIR = Path(os.getenv("STT_INPUT_VIDEO_DIR", BASE_DIR / "videos"))
 OUTPUT_AUDIO_DIR = Path(os.getenv("STT_OUTPUT_AUDIO_DIR", BASE_DIR / "results/audio_wav"))
@@ -56,6 +56,7 @@ _WHISPER_MODEL = None
 _FASTER_WHISPER_MODEL = None
 _stt_progress = {"progress": 0, "stage": "idle"}
 _stt_last_logged = {"progress": -1, "stage": ""}
+_firestore_client: Optional[firestore.Client] = None
 
 _openrouter_client: Optional[OpenAI] = None
 _openrouter_headers: Dict[str, str] = {}
@@ -118,16 +119,13 @@ def initialize_firebase() -> bool:
         if firebase_admin._apps:
             return True
 
-        if not FIREBASE_DATABASE_URL:
-            print("⚠️ FIREBASE_DATABASE_URL 환경변수가 설정되지 않았습니다.")
-            return False
-
         if not CREDENTIAL_PATH.exists():
             print(f"⚠️ Firebase 서비스 키를 찾을 수 없습니다: {CREDENTIAL_PATH}")
             return False
 
         cred = credentials.Certificate(str(CREDENTIAL_PATH))
-        firebase_admin.initialize_app(cred, {'databaseURL': FIREBASE_DATABASE_URL})
+        options = {"projectId": FIREBASE_PROJECT_ID} if FIREBASE_PROJECT_ID else None
+        firebase_admin.initialize_app(cred, options)
         print("✅ Firebase Admin SDK 초기화 완료.")
         return True
     except Exception as e:
@@ -135,25 +133,60 @@ def initialize_firebase() -> bool:
         return False
 
 
+def get_firestore_client():
+    """초기화된 Firestore 클라이언트를 반환합니다."""
+    global _firestore_client
+    if _firestore_client is not None:
+        return _firestore_client
+    ok = initialize_firebase()
+    if not ok:
+        return None
+    _firestore_client = firestore.client()
+    return _firestore_client
+
+
+def _get_presentation_doc(user_id: str, file_name: str):
+    client = get_firestore_client()
+    if not client:
+        return None
+    return (
+        client.collection("users")
+        .document(user_id)
+        .collection("presentations")
+        .document(file_name)
+    )
+
+
 def upload_to_firebase_text(user_id: str, file_name: str, stt_data: dict):
     """STT 전사 결과 중 'full_text'만 DB의 stt_raw 경로에 업로드합니다."""
-    ref_path_text = f'users/{user_id}/presentations/{file_name}/stt_raw/full_text'
-    ref_path_timestamps = f'users/{user_id}/presentations/{file_name}/stt_raw/timestamps'
+    doc_ref = _get_presentation_doc(user_id, file_name)
+    if doc_ref is None:
+        print("    -> [DB] Firestore 클라이언트를 가져오지 못해 업로드를 건너뜁니다.")
+        return
 
+    payload = {
+        "stt_raw": {
+            "full_text": stt_data.get("full_text"),
+            "timestamps": stt_data.get("words"),
+        },
+        "stt_analysis": stt_data,
+    }
     try:
-        db.reference(ref_path_text).set(stt_data['full_text'])
-        db.reference(ref_path_timestamps).set(stt_data['words'])
-        print("    -> [DB] 텍스트 및 타임스탬프 업로드 완료.")
+        doc_ref.set(payload, merge=True)
+        print("    -> [DB] STT 결과 업로드 완료 (Firestore).")
     except Exception as e:
-        print(f"    -> [DB] Firebase 업로드 실패. 오류: {e}")
+        print(f"    -> [DB] Firestore 업로드 실패. 오류: {e}")
 
 
 def upload_to_firebase_voice_analysis(user_id: str, file_name: str, analysis_data: dict):
     """언어 습관 및 WPM 분석 결과를 DB voice_analysis 경로에 업로드합니다."""
-    ref_path = f'users/{user_id}/presentations/{file_name}/voice_analysis'
+    doc_ref = _get_presentation_doc(user_id, file_name)
+    if doc_ref is None:
+        print("    -> [DB] Firestore 클라이언트를 가져오지 못해 업로드를 건너뜁니다.")
+        return
     try:
-        db.reference(ref_path).set(analysis_data)
-        print("    -> [DB] voice_analysis 업로드 완료.")
+        doc_ref.set({"voice_analysis": analysis_data}, merge=True)
+        print("    -> [DB] voice_analysis 업로드 완료 (Firestore).")
     except Exception as e:
         print(f"    -> [DB] voice_analysis 업로드 실패: {e}")
 

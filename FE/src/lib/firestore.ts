@@ -1,10 +1,12 @@
 import {
   collection,
+  collectionGroup,
   doc,
   setDoc,
   getDoc,
   getDocs,
   query,
+  where,
   orderBy,
   limit,
   serverTimestamp,
@@ -29,6 +31,10 @@ export interface PresentationData {
   videoURL: string;
   feedbackFile?: string;
   feedbackPreview?: string;
+  stt_analysis?: any;
+  vision_analysis?: any;
+  final_report?: string;
+  final_report_preview?: string;
   overallScore: number;
   duration: number;
   metrics: {
@@ -41,6 +47,7 @@ export interface PresentationData {
   timestamp: Timestamp | Date;
   createdAt: any;
   updatedAt?: any;
+  projectId?: string;
 }
 
 export interface UserProfile {
@@ -91,7 +98,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 // 🔹 발표 데이터 업로드 + 분석 저장
 // =============================
 
-const BASE_URL = 'http://127.0.0.1:8000'; 
+const BASE_URL = 'http://127.0.0.1:8000';
 
 export async function uploadAndAnalyzePresentation(
   uid: string,
@@ -176,16 +183,78 @@ export async function getUserPresentations(
   userId: string,
   limitCount: number = 10
 ): Promise<PresentationData[]> {
-  const presentationsRef = collection(db, 'users', userId, 'presentations');
-  const q = query(presentationsRef, orderBy('createdAt', 'desc'), limit(limitCount));
-  const querySnapshot = await getDocs(q);
+  // 인덱스 없이 동작하도록: 사용자 프로젝트를 먼저 불러오고, 각 프로젝트의 feedback 서브컬렉션을 개별 조회
+  const asDate = (val: any): Date => {
+    if (!val) return new Date(0);
+    if (val instanceof Date) return val;
+    if (typeof val.toDate === 'function') return val.toDate();
+    if (typeof val === 'string') return new Date(val);
+    return new Date(val);
+  };
+
+  const projectsSnap = await getDocs(collection(db, 'users', userId, 'projects'));
   const presentations: PresentationData[] = [];
 
-  querySnapshot.forEach((doc) => {
-    presentations.push({ id: doc.id, ...(doc.data() as PresentationData) });
+  // 각 프로젝트에서 최근 feedback 몇 개씩 수집
+  const feedbackPromises = projectsSnap.docs.map(async (projDoc) => {
+    const projectId = projDoc.id;
+    const fbCol = collection(db, 'users', userId, 'projects', projectId, 'feedback');
+    const fbSnap = await getDocs(query(fbCol));
+    fbSnap.forEach((d) => {
+      const data = d.data() as any;
+      const updatedAt = asDate(data.updated_at);
+      const createdAt = asDate(data.created_at);
+      presentations.push({
+        id: d.id,
+        userId,
+        title: data.original_filename || data.presentation_id || data.title || d.id,
+        videoURL: '',
+      feedbackFile: data.feedback_file,
+      feedbackPreview: data.final_report_preview,
+      final_report: data.final_report,
+      final_report_preview: data.final_report_preview,
+      stt_analysis: data.stt_analysis,
+      vision_analysis: data.vision_analysis,
+      overallScore: data.overallScore || 80,
+      duration:
+        data.duration_sec ||
+        data.stt_analysis?.duration_sec ||
+        data.vision_analysis?.metadata?.duration_sec ||
+          0,
+        metrics: data.metrics || { clarity: 0, pace: 0, confidence: 0, engagement: 0 },
+        insights: data.insights || [],
+        timestamp: updatedAt,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        projectId,
+      });
+    });
   });
 
-  return presentations;
+  await Promise.all(feedbackPromises);
+
+  presentations.sort(
+    (a, b) =>
+      ((b.updatedAt as any)?.getTime?.() || 0) - ((a.updatedAt as any)?.getTime?.() || 0)
+  );
+  return presentations.slice(0, limitCount);
+}
+
+// 단일 피드백 문서 전체 조회
+export async function getPresentationDetail(
+  userId: string,
+  projectId: string,
+  presentationId: string
+): Promise<any | null> {
+  try {
+    const refDoc = doc(db, 'users', userId, 'projects', projectId, 'feedback', presentationId);
+    const snap = await getDoc(refDoc);
+    if (!snap.exists()) return null;
+    return { id: presentationId, projectId, userId, ...snap.data() };
+  } catch (err) {
+    console.error('발표 상세 조회 실패:', err);
+    return null;
+  }
 }
 
 export async function getPresentationById(

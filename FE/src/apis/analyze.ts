@@ -1,15 +1,14 @@
 import axios from "axios";
 
-export async function analyzePresentation(userId: string, projectId: string, file: File) {
-  const API_URL = import.meta.env.VITE_API_URL; 
-  const formData = new FormData();
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-  formData.append("userId", userId);
-  formData.append("projectId", projectId);
+export async function analyzePresentation(userId: string, projectId: string, file: File) {
+  const formData = new FormData();
+  formData.append("user_id", userId);
+  formData.append("project_id", projectId);
   formData.append("file", file);
 
-
-   const res = await axios.post(`${API_URL}/analyze/video`, formData, {
+  const res = await axios.post(`${API_URL}/analyze/video`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 

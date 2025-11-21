@@ -30,6 +30,7 @@ export function RecordPage({ user, selectedProjectId, onNavigate, onComplete }: 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const recordedBlobRef = useRef<Blob | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // 🔹 비디오 스트림 연결
   useEffect(() => {
@@ -107,26 +108,18 @@ const handleAnalyze = async () => {
     alert("녹화된 영상이 없습니다.");
     return;
   }
+  if (!selectedProjectId) {
+    alert("프로젝트를 먼저 선택하거나 생성해주세요.");
+    return;
+  }
 
   try {
     onNavigate("loading");
 
-      // ------------- 🔥 MOCK 사용 구간 -------------
-      const mock = await import("../mocks/sampleResult.json");
-
-      onComplete(mock.default);
-      onNavigate("results");
-      return;
-  // ---------------------------------------------
-  
-    /*
     // 🔥 Blob을 File 객체로 변환 (백엔드에서 File 필요)
     const file = new File([recordedBlobRef.current], "presentation.webm", {
       type: "video/webm",
     });
-
-    // 로딩 페이지로 이동 (선택)
-    onNavigate("loading");
 
     // 🔥 백엔드 API 호출
     const result = await analyzePresentation(user.uid, selectedProjectId, file);
@@ -138,12 +131,42 @@ const handleAnalyze = async () => {
 
     // 🔥 페이지 이동
     onNavigate("results");
-*/
   } catch (err) {
     console.error(err);
     alert("발표 분석 중 오류가 발생했습니다.");
   }
-  
+};
+
+// 🔹 파일 업로드로 바로 분석
+const handleFileUploadClick = () => {
+  fileInputRef.current?.click();
+};
+
+const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (!user) {
+    alert("로그인 후 이용해주세요.");
+    return;
+  }
+  if (!selectedProjectId) {
+    alert("프로젝트를 먼저 선택하거나 생성해주세요.");
+    e.target.value = '';
+    return;
+  }
+
+  try {
+    onNavigate("loading");
+    const result = await analyzePresentation(user.uid, selectedProjectId, file);
+    onComplete(result);
+    onNavigate("results");
+  } catch (err) {
+    console.error(err);
+    alert("파일 업로드 분석 중 오류가 발생했습니다.");
+  } finally {
+    // 같은 파일 다시 선택 가능하게 value 초기화
+    e.target.value = '';
+  }
 };
 
   const formatTime = (sec: number) => {
@@ -153,9 +176,9 @@ const handleAnalyze = async () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       {/* 배경 */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-20 left-20 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl" />
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-green-500/30 rounded-full blur-3xl" />
@@ -298,8 +321,8 @@ const handleAnalyze = async () => {
             )}
           </div>
 
-          {/* 💡 팁 섹션 */}
-          <div className="lg:col-span-1">
+          {/* 💡 팁 + 파일 업로드 섹션 */}
+          <div className="lg:col-span-1 flex flex-col gap-4">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -311,6 +334,30 @@ const handleAnalyze = async () => {
                 <li>🎤 마이크와 적절한 거리를 유지하세요</li>
                 <li>📷 카메라는 눈높이에 맞추세요</li>
               </ul>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm"
+            >
+              <h3 className="text-lg mb-3 text-white">파일로 업로드</h3>
+              <p className="text-white/70 text-sm mb-4">
+                이미 촬영된 영상이 있다면 바로 업로드해서 분석하세요.
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={handleFileSelected}
+              />
+              <Button
+                onClick={handleFileUploadClick}
+                className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white border-0"
+              >
+                영상 파일 업로드
+              </Button>
             </motion.div>
           </div>
         </div>

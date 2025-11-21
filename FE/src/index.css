@@ -168,6 +168,13 @@
 
   body {
     line-height: inherit;
+    background-color: #020617; /* slate-950 배경으로 기본 캔버스 어둡게 */
+    min-height: 100vh;
+  }
+
+  #root {
+    min-height: 100vh;
+    background-color: #020617;
   }
 
   hr {

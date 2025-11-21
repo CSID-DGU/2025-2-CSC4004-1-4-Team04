@@ -3,7 +3,7 @@ import { User, TrendingUp, Award, Calendar, BarChart3, AlertCircle } from 'lucid
 import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { useState, useEffect } from 'react';
-import { getUserPresentations, getUserStats } from '../lib/firestore';
+import { getUserPresentations, getUserStats, getPresentationDetail } from '../lib/firestore';
 import type { PresentationData } from '../lib/firestore';
 
 type Page = 'home' | 'record' | 'results' | 'mypage' | 'scriptupload';
@@ -11,9 +11,10 @@ type Page = 'home' | 'record' | 'results' | 'mypage' | 'scriptupload';
 interface MyPageProps {
   user: { uid: string; email: string; name: string; photoURL?: string } | null;
   onNavigate: (page: Page) => void;
+  onSelectPresentation?: (p: PresentationData) => void;
 }
 
-export function MyPage({ user, onNavigate }: MyPageProps) {
+export function MyPage({ user, onNavigate, onSelectPresentation }: MyPageProps) {
   const [presentations, setPresentations] = useState<PresentationData[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,18 +52,18 @@ export function MyPage({ user, onNavigate }: MyPageProps) {
     totalPresentations: stats?.totalPresentations || 0,
     averageScore: stats?.averageScore || 0,
     improvement: stats?.improvement || 0,
-    recentPresentations: presentations.length > 0 ? presentations.map(p => ({
-      id: p.id,
-      title: p.title,
-      date:
-      p.timestamp instanceof Date
-        ? p.timestamp.toISOString()
-        : p.timestamp?.toDate
-        ? p.timestamp.toDate().toISOString()
-        : new Date().toISOString(),
-          score: p.overallScore,
-          duration: p.duration,
-        })) : [],
+    recentPresentations:
+      presentations.length > 0
+        ? presentations.map((p) => {
+            const dateVal =
+              p.timestamp instanceof Date
+                ? p.timestamp.toISOString()
+                : p.timestamp?.toDate
+                ? p.timestamp.toDate().toISOString()
+                : new Date().toISOString();
+            return { ...p, date: dateVal };
+          })
+        : [],
     skillProgress: stats?.skillProgress || {
       clarity: 0,
       pace: 0,
@@ -201,7 +202,22 @@ export function MyPage({ user, onNavigate }: MyPageProps) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                       className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all cursor-pointer"
-                      onClick={() => onNavigate('results')}
+                      onClick={async () => {
+                        if (onSelectPresentation) {
+                          let picked = presentation;
+                          if (presentation.projectId) {
+                            const detail = await getPresentationDetail(
+                              user?.uid || presentation.userId,
+                              presentation.projectId,
+                              presentation.id || presentation.title
+                            );
+                            if (detail) picked = { ...picked, ...detail };
+                          }
+                          onSelectPresentation(picked);
+                          return;
+                        }
+                        onNavigate('record');
+                      }}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
@@ -215,8 +231,8 @@ export function MyPage({ user, onNavigate }: MyPageProps) {
                             <span>{formatDuration(presentation.duration)}</span>
                           </div>
                         </div>
-                        <div className={`text-2xl ${getScoreColor(presentation.score)}`}>
-                          {presentation.score}
+                        <div className={`text-2xl ${getScoreColor(presentation.overallScore ?? presentation.score ?? 0)}`}>
+                          {presentation.overallScore ?? presentation.score ?? 0}
                         </div>
                       </div>
                     </motion.div>

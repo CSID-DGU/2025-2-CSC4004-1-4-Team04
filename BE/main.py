@@ -1,9 +1,12 @@
 from pathlib import Path
 from datetime import datetime
+import math
 from functools import partial
 from fastapi import FastAPI, UploadFile, File, Form, Body
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 import os, asyncio, json, shutil
+import numpy as np
 
 from video_analyzer import analyze_video, set_progress, get_progress
 from stt_processor import (
@@ -11,21 +14,47 @@ from stt_processor import (
     whisper_transcribe,
     process_single_video,
     get_stt_progress,
+    analyze_voice_rhythm_and_patterns,
 )
 from feedback_api import router as voice_feedback_router, generate_combined_feedback_report
+from result_summary_api import router as summary_router
 
-# Firebase (RTDB)
+# Firebase (Firestore)
 import firebase_admin
-from firebase_admin import credentials, db
+from firebase_admin import credentials, firestore
 
-FIREBASE_DATABASE_URL = "https://csc4004-1-4-team04-default-rtdb.firebaseio.com/"
-cred = credentials.Certificate("serviceAccountKey.json")
+FIREBASE_CRED_PATH = os.getenv("FIREBASE_CRED_PATH", "serviceAccountKey.json")
+FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
 
-if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred, {'databaseURL': FIREBASE_DATABASE_URL})
+
+def _init_firestore():
+    if not firebase_admin._apps:
+        cred = credentials.Certificate(FIREBASE_CRED_PATH)
+        options = {"projectId": FIREBASE_PROJECT_ID} if FIREBASE_PROJECT_ID else None
+        firebase_admin.initialize_app(cred, options)
+    return firestore.client()
+
+
+db = _init_firestore()
 
 app = FastAPI()
 app.include_router(voice_feedback_router)
+app.include_router(summary_router)
+
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*")
+origin_list = [o.strip() for o in ALLOWED_ORIGINS.split(",") if o.strip()] if ALLOWED_ORIGINS else []
+# 와일드카드(*)일 때는 allow_credentials=False 이어야 CORS 에러를 피할 수 있음
+allow_credentials = "*" not in origin_list
+if not origin_list:
+    origin_list = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origin_list,
+    allow_credentials=allow_credentials,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def save_video_analysis_file(result: dict, filename: str, output_dir: Path) -> str:
@@ -62,14 +91,78 @@ def root():
     return {"message": "🎥 Video Analysis API with Progress Stream"}
 
 
+def _presentation_doc(user_id: str, presentation_id: str):
+    return (
+        db.collection("users")
+        .document(user_id)
+        .collection("presentations")
+        .document(presentation_id)
+    )
+
+
+def _feedback_doc(user_id: str, project_id: str, feedback_id: str):
+    return (
+        db.collection("users")
+        .document(user_id)
+        .collection("projects")
+        .document(project_id)
+        .collection("feedback")
+        .document(feedback_id)
+    )
+
+
+def _sanitize_for_firestore(obj):
+    """Firestore가 허용하는 기본 타입으로 변환."""
+    if obj is None:
+        return None
+    # numpy scalar
+    if hasattr(np, "generic") and isinstance(obj, np.generic):
+        return _sanitize_for_firestore(obj.item())
+    if isinstance(obj, (np.floating, np.float32, np.float64)):
+        val = float(obj)
+        return val if math.isfinite(val) else None
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, (np.bool_)):
+        return bool(obj)
+    if isinstance(obj, float):
+        return obj if math.isfinite(obj) else None
+    if isinstance(obj, int):
+        return obj
+    # pathlib
+    if isinstance(obj, Path):
+        return str(obj)
+    # numpy array
+    if hasattr(obj, "shape") and hasattr(obj, "tolist"):
+        try:
+            return obj.tolist()
+        except Exception:
+            pass
+    # 리스트/튜플
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_for_firestore(v) for v in obj]
+    # dict
+    if isinstance(obj, dict):
+        return {k: _sanitize_for_firestore(v) for k, v in obj.items()}
+    # 기본 타입은 그대로
+    # Firestore는 binary 등 일부 타입을 허용하지 않으므로 문자열 변환
+    try:
+        json.dumps(obj)  # 직렬화 가능 여부 체크
+        return obj
+    except Exception:
+        return str(obj)
+
+
 @app.post("/analyze/video")
 async def analyze_video_api(
     user_id: str = Form(...),  # 로그인된 user ID를 받음
+    project_id: str = Form(...),  # 선택된 프로젝트 ID
     file: UploadFile = File(...)):
     """
     업로드된 영상 파일을 분석하여 시선/자세 분석과 음성 분석을 실행하고,
     진행률은 /analyze/progress 에서 실시간 스트리밍됩니다.
-    결과는 RTDB에 저장합니다.
+    결과는 Firestore에 저장합니다. 저장 위치:
+    users/{user_id}/projects/{project_id}/feedback/{presentation_id}
     """
     base_name = os.path.splitext(file.filename)[0]
     temp_dir = f"temp_{user_id}_{base_name}"
@@ -82,6 +175,8 @@ async def analyze_video_api(
     with open(temp_video_path, "wb") as f:
         f.write(contents)
 
+    print(f"[analyze_video] user_id={user_id}, project_id={project_id}, file={file.filename}")
+
     loop = asyncio.get_event_loop()
 
     try:
@@ -92,14 +187,55 @@ async def analyze_video_api(
         gaze_results = await gaze_task
         stt_results = await stt_task
 
-        file_db_path = f'users/{user_id}/presentations/{base_name}'
-        db.reference(f'{file_db_path}/stt_analysis').set(stt_results)
-        db.reference(f'{file_db_path}/vision_analysis').set(gaze_results)
+        # 추가 음성 분석(WPM, pause 등) 계산
+        try:
+            voice_analysis = analyze_voice_rhythm_and_patterns(stt_results)
+            stt_results["voice_analysis"] = voice_analysis
+        except Exception as e:
+            print(f"⚠️ voice_analysis 계산 실패: {e}")
+
+        # 저장용으로 간소화/정제 (Firestore 호환)
+        if isinstance(gaze_results, dict) and "gaze" in gaze_results:
+            # trace_sample은 길고 array 타입이 많아 문제가 될 수 있어 제거
+            gaze_results = dict(gaze_results)
+            if isinstance(gaze_results.get("gaze"), dict) and "trace_sample" in gaze_results["gaze"]:
+                gaze_results["gaze"] = dict(gaze_results["gaze"])
+                gaze_results["gaze"].pop("trace_sample", None)
+
+        gaze_results = _sanitize_for_firestore(gaze_results)
+        stt_results = _sanitize_for_firestore(stt_results)
+
+        feedback_doc = _feedback_doc(user_id, project_id, base_name)
+        existing = feedback_doc.get()
+        existing_data = existing.to_dict() if existing.exists else {}
+        created_at_value = existing_data.get("created_at") or firestore.SERVER_TIMESTAMP
+
+        payload = {
+            "stt_analysis": stt_results,
+            "vision_analysis": gaze_results,
+            "original_filename": file.filename,
+            "project_id": project_id,
+            "user_id": user_id,
+            "presentation_id": base_name,
+            "duration_sec": gaze_results.get("metadata", {}).get("duration_sec") or stt_results.get("duration_sec"),
+            "created_at": created_at_value,
+            "updated_at": firestore.SERVER_TIMESTAMP,
+        }
+        try:
+            feedback_doc.set(payload, merge=True)
+            print(f"[analyze_video] Firestore 저장 완료 -> users/{user_id}/projects/{project_id}/feedback/{base_name}")
+        except Exception as e:
+            print(f"❌ Firestore 업로드 실패: {e}")
+            print(f"payload keys: {list(payload.keys())}")
+            print(f"vision_analysis keys: {list(payload.get('vision_analysis', {}).keys())}")
 
         return {
-            "message": "시선/자세 및 STT 분석 완료. RTDB 저장 성공.",
+            "message": "시선/자세 및 STT 분석 완료. Firestore 저장 성공.",
             "user_id": user_id,
-            "presentation_id": base_name  # 이 ID로 /feedback/full 호출
+            "project_id": project_id,
+            "presentation_id": base_name,  # 이 ID로 /feedback/from-db 호출
+            "video_result": gaze_results,
+            "stt_result": stt_results,
         }
 
     except Exception as e:
@@ -217,14 +353,17 @@ def feedback_from_db_api(data: dict = Body(...)):
     try:
         user_id = data.get("user_id")
         presentation_id = data.get("presentation_id")
+        project_id = data.get("project_id") or data.get("projectId")
 
-        if not (user_id and presentation_id):
-            return {"message": "❌ 'user_id'와 'presentation_id'가 필요합니다."}
+        if not (user_id and project_id and presentation_id):
+            return {"message": "❌ 'user_id', 'project_id', 'presentation_id'가 필요합니다."}
 
-        db_path = f'users/{user_id}/presentations/{presentation_id}'
+        doc_ref = _feedback_doc(user_id, project_id, presentation_id)
+        snapshot = doc_ref.get()
+        data_in_db = snapshot.to_dict() if snapshot.exists else {}
 
-        gaze_data = db.reference(f'{db_path}/vision_analysis').get()
-        stt_data = db.reference(f'{db_path}/stt_analysis').get()
+        gaze_data = data_in_db.get("vision_analysis") if data_in_db else None
+        stt_data = data_in_db.get("stt_analysis") if data_in_db else None
 
         if not gaze_data:
             return {"message": "❌ 시선/자세 분석 데이터를 찾을 수 없습니다."}
@@ -239,11 +378,19 @@ def feedback_from_db_api(data: dict = Body(...)):
             original_filename=presentation_id,
         )
 
-        db.reference(f'{db_path}/final_report').set(feedback_payload["content"])
+        doc_ref.set(
+            {
+                "final_report": feedback_payload["content"],
+                "final_report_preview": feedback_payload["feedback_preview"],
+                "feedback_file": feedback_payload["file_path"],
+                "updated_at": datetime.utcnow().isoformat(),
+            },
+            merge=True,
+        )
 
         return {
-            "message": "✅ 영상+음성 통합 Feedback report generated and saved to RTDB.",
-            "document_id": f"{user_id}/{presentation_id}",
+            "message": "✅ 영상+음성 통합 Feedback report generated and saved to Firestore.",
+            "document_id": f"{user_id}/{project_id}/{presentation_id}",
             "feedback_preview": feedback_payload["feedback_preview"],
             "feedback_file": feedback_payload["file_path"],
         }

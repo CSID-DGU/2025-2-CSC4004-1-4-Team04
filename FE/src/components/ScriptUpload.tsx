@@ -18,7 +18,7 @@ export function ScriptUpload({ user, onSelectProject }: ScriptUploadProps) {
   // 기존 프로젝트 불러오기
   useEffect(() => {
     const fetchProjects = async () => {
-      const snap = await getDocs(collection(db, `presentations/${user.uid}/projects`));
+      const snap = await getDocs(collection(db, "users", user.uid, "projects"));
       const list = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setProjects(list);
     };
@@ -32,7 +32,7 @@ export function ScriptUpload({ user, onSelectProject }: ScriptUploadProps) {
       return;
     }
 
-    const docRef = await addDoc(collection(db, `presentations/${user.uid}/projects`), {
+    const docRef = await addDoc(collection(db, "users", user.uid, "projects"), {
       title,
       scriptText,
       userId: user.uid,
