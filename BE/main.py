@@ -28,11 +28,36 @@ FIREBASE_CRED_PATH = os.getenv("FIREBASE_CRED_PATH", "serviceAccountKey.json")
 FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
 
 
+import base64
+
 def _init_firestore():
     if not firebase_admin._apps:
-        cred = credentials.Certificate(FIREBASE_CRED_PATH)
+        cred = None
+        
+        # 1. 환경 변수에서 Base64 문자열 확인 (배포용)
+        firebase_b64 = os.getenv("FIREBASE_CRED_BASE64")
+        if firebase_b64:
+            try:
+                # Base64 디코딩 -> JSON 파싱 -> dict
+                cred_json = json.loads(base64.b64decode(firebase_b64).decode('utf-8'))
+                cred = credentials.Certificate(cred_json)
+                print("✅ Loaded Firebase credentials from env var.")
+            except Exception as e:
+                print(f"⚠️ Failed to load credentials from env var: {e}")
+
+        # 2. 파일 경로에서 확인 (로컬 개발용)
+        if not cred:
+            cred_path = os.getenv("FIREBASE_CRED_PATH", "serviceAccountKey.json")
+            if os.path.exists(cred_path):
+                cred = credentials.Certificate(cred_path)
+                print(f"✅ Loaded Firebase credentials from file: {cred_path}")
+            else:
+                print("❌ No Firebase credentials found!")
+                return None
+
         options = {"projectId": FIREBASE_PROJECT_ID} if FIREBASE_PROJECT_ID else None
         firebase_admin.initialize_app(cred, options)
+        
     return firestore.client()
 
 
