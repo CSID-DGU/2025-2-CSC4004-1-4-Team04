@@ -6,8 +6,15 @@
 
 import json
 import os
+
+from openai import OpenAI
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, Tuple
+
 
 from fastapi import APIRouter, HTTPException, Query
 from difflib import SequenceMatcher
@@ -49,32 +56,87 @@ def _as_list(val: Any) -> list:
     return [val]
 
 
-def _compute_script_similarity(script_text: Optional[str], spoken_text: Optional[str]) -> Tuple[Optional[int], list]:
-    """대본과 발화 텍스트 유사도, 간단한 피드백 라인 반환."""
+def _compute_script_similarity(script_text: Optional[str], spoken_text: Optional[str]):
+    """대본과 발화 텍스트 유사도를 OpenAI LLM으로 계산."""
     if not script_text or not spoken_text:
         return None, []
+    print("[_compute_script_similarity] LLM 호출 시작") 
+
+    prompt = f"""
+        당신은 발표 분석 전문가입니다. 
+        주어진 script(대본)과 spoken(발화)를 비교하여 아래 항목을 JSON으로 출력하세요.
+
+        필수 생성 요소:
+
+        1. similarity : 
+        - 0~100 사이 정수
+        - 의미 기반(semantic) 유사도로 평가
+
+        2. feedback_lines : 
+        - 3~6개의 문장 리스트
+        - 반드시 아래 내용을 포함해야 함:
+            - 핵심 차이점 요약
+            - 발표자가 개선해야 할 점
+            - *유사하지 않은 부분을 직접 비교해서 보여주는 문장*, 예시:
+
+            "발표 대본: '○○○'"
+            "실제 발화: '△△△'"
+
+            - 즉, script와 spoken 중 **일치하지 않는 부분을 발췌하여 나란히 보여주는 항목**을 포함해야 함.
+
+        script:
+        <<<SCRIPT>>>
+        {script_text}
+        <<<END_SCRIPT>>>
+
+        spoken:
+        <<<SPOKEN>>>
+        {spoken_text}
+        <<<END_SPOKEN>>>
+
+        반드시 아래 정확한 JSON 형식을 따르세요:
+
+        {{
+        "similarity": 85,
+        "feedback_lines": [
+            "핵심 문장들이 대부분 일치합니다.",
+            "대본의 '프로젝트 목표는 명확합니다' 부분이 실제 발화에서는 '목표가 좀 애매했던 것 같습니다'로 변경되었습니다.",
+            "발표 대본: '프로젝트 목표는 명확합니다'"
+            "실제 발화: '목표가 좀 애매했던 것 같습니다'",
+            "마무리 문장의 논리 흐름이 일부 변경되었습니다."
+        ]
+        }}
+        """
+    
     try:
-        ratio = SequenceMatcher(None, script_text, spoken_text).ratio()
-        percent = int(round(ratio * 100))
-    except Exception:
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+        )
+        print("[_compute_script_similarity] LLM 응답 수신")
+
+        content = resp.choices[0].message.content.strip()
+        print("[_compute_script_similarity] raw content:", content)
+
+        if content.startswith("```"):
+            parts = content.split("```")
+            if len(parts) > 1:
+                content = parts[1].strip()
+                if content.startswith("json"):
+                    content = content[4:].strip()
+
+        data = json.loads(content)
+
+        similarity = data.get("similarity")
+        feedback = data.get("feedback_lines", [])
+        print("[_compute_script_similarity] parsed similarity:", similarity)
+
+        return similarity, feedback
+
+    except Exception as e:
+        print("LLM 기반 스크립트 유사도 계산 실패:", e)
         return None, []
-
-    # 짧은 예시 구문 추출
-    script_excerpt = (script_text[:120] + ("..." if len(script_text) > 120 else ""))
-    spoken_excerpt = (spoken_text[:120] + ("..." if len(spoken_text) > 120 else ""))
-
-    feedback = [
-        f"대본-발화 유사도 추정: 약 {percent}%",
-        f"대본 예시: {script_excerpt}",
-        f"발화 예시: {spoken_excerpt}",
-    ]
-    if percent < 90:
-        feedback.append("유사도가 낮아요. 핵심 문장은 대본과 동일하게 연습해보세요.")
-    elif percent < 97:
-        feedback.append("대부분 일치하지만 일부 표현이 달라요. 중요한 문장만 다시 맞춰보세요.")
-    else:
-        feedback.append("대본과 잘 일치합니다.")
-    return percent, feedback
 
 
 def _normalize_payload(raw: Dict[str, Any]) -> Dict[str, Any]:

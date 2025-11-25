@@ -321,7 +321,7 @@ export function ResultsPage({ user, results, onNavigate }: ResultsPageProps) {
               {logic.similarity_analysis?.length ? (
                 logic.similarity_analysis.map((item: string, idx: number) => (
                   <p key={idx} className="text-slate-700 text-sm leading-relaxed whitespace-pre-line">
-                    - {item}
+                    {item}
                   </p>
                 ))
               ) : (
