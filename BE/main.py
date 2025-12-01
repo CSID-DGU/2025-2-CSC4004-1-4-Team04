@@ -26,6 +26,7 @@ from firebase_admin import credentials, firestore
 
 FIREBASE_CRED_PATH = os.getenv("FIREBASE_CRED_PATH", "serviceAccountKey.json")
 FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
+GOOGLE_APPLICATION_CREDENTIALS_JSON = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 
 
 import base64
@@ -33,19 +34,28 @@ import base64
 def _init_firestore():
     if not firebase_admin._apps:
         cred = None
-        
-        # 1. 환경 변수에서 Base64 문자열 확인 (배포용)
-        firebase_b64 = os.getenv("FIREBASE_CRED_BASE64")
-        if firebase_b64:
-            try:
-                # Base64 디코딩 -> JSON 파싱 -> dict
-                cred_json = json.loads(base64.b64decode(firebase_b64).decode('utf-8'))
-                cred = credentials.Certificate(cred_json)
-                print("✅ Loaded Firebase credentials from env var.")
-            except Exception as e:
-                print(f"⚠️ Failed to load credentials from env var: {e}")
 
-        # 2. 파일 경로에서 확인 (로컬 개발용)
+        # 1. 환경변수에 JSON 전체가 들어있는 경우
+        if GOOGLE_APPLICATION_CREDENTIALS_JSON:
+            try:
+                cred_json = json.loads(GOOGLE_APPLICATION_CREDENTIALS_JSON)
+                cred = credentials.Certificate(cred_json)
+                print("✅ Loaded Firebase credentials from GOOGLE_APPLICATION_CREDENTIALS_JSON.")
+            except Exception as e:
+                print(f"⚠️ Failed to load credentials from GOOGLE_APPLICATION_CREDENTIALS_JSON: {e}")
+
+        # 2. Base64 문자열로 제공되는 경우
+        if not cred:
+            firebase_b64 = os.getenv("FIREBASE_CRED_BASE64")
+            if firebase_b64:
+                try:
+                    cred_json = json.loads(base64.b64decode(firebase_b64).decode("utf-8"))
+                    cred = credentials.Certificate(cred_json)
+                    print("✅ Loaded Firebase credentials from FIREBASE_CRED_BASE64.")
+                except Exception as e:
+                    print(f"⚠️ Failed to load credentials from FIREBASE_CRED_BASE64: {e}")
+
+        # 3. 파일 경로에서 확인 (로컬 개발용)
         if not cred:
             cred_path = os.getenv("FIREBASE_CRED_PATH", "serviceAccountKey.json")
             if os.path.exists(cred_path):

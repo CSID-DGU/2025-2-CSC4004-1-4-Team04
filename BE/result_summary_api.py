@@ -52,9 +52,35 @@ from firebase_admin import credentials, firestore
 # Firebase 초기화 (main.py와 동일한 환경변수 사용)
 FIREBASE_CRED_PATH = os.getenv("FIREBASE_CRED_PATH", "serviceAccountKey.json")
 FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
+GOOGLE_APPLICATION_CREDENTIALS_JSON = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+FIREBASE_CRED_BASE64 = os.getenv("FIREBASE_CRED_BASE64")
 
 if not firebase_admin._apps:
-    cred = credentials.Certificate(FIREBASE_CRED_PATH)
+    cred = None
+    # 1) JSON 문자열 그대로
+    if GOOGLE_APPLICATION_CREDENTIALS_JSON:
+        try:
+            cred_json = json.loads(GOOGLE_APPLICATION_CREDENTIALS_JSON)
+            cred = credentials.Certificate(cred_json)
+            print("✅ Loaded Firebase credentials from GOOGLE_APPLICATION_CREDENTIALS_JSON.")
+        except Exception as e:
+            print(f"⚠️ Failed to load credentials from GOOGLE_APPLICATION_CREDENTIALS_JSON: {e}")
+    # 2) Base64
+    if not cred and FIREBASE_CRED_BASE64:
+        try:
+            cred_json = json.loads(base64.b64decode(FIREBASE_CRED_BASE64).decode("utf-8"))
+            cred = credentials.Certificate(cred_json)
+            print("✅ Loaded Firebase credentials from FIREBASE_CRED_BASE64.")
+        except Exception as e:
+            print(f"⚠️ Failed to load credentials from FIREBASE_CRED_BASE64: {e}")
+    # 3) 파일 경로
+    if not cred:
+        if os.path.exists(FIREBASE_CRED_PATH):
+            cred = credentials.Certificate(FIREBASE_CRED_PATH)
+            print(f"✅ Loaded Firebase credentials from file: {FIREBASE_CRED_PATH}")
+        else:
+            raise RuntimeError("Firebase credentials not found. Set GOOGLE_APPLICATION_CREDENTIALS_JSON or FIREBASE_CRED_BASE64 or FIREBASE_CRED_PATH.")
+
     options = {"projectId": FIREBASE_PROJECT_ID} if FIREBASE_PROJECT_ID else None
     firebase_admin.initialize_app(cred, options)
 
