@@ -175,6 +175,61 @@ function normalizeData(raw: any) {
   };
 }
 
+
+// =========================
+// 📌 시각화용 데이터 변환 헬퍼
+// =========================
+
+// 점수 → 라벨
+function toGrade(score: number) {
+  if (score >= 90) return "매우 좋음";
+  if (score >= 75) return "좋음";
+  if (score >= 60) return "보통";
+  return "개선 필요";
+}
+
+// 소수 → 퍼센트
+function toPercent(v: number | undefined) {
+  if (!v && v !== 0) return "0%";
+  return Math.round(v * 100) + "%";
+}
+
+// 소수 → 점수(0~100)
+function toScore(v: number | undefined) {
+  if (!v && v !== 0) return 0;
+  return Math.round(v * 100);
+}
+
+// 각 지표 해석 문구
+function interpretGaze(centerRatio: number) {
+  const p = centerRatio * 100;
+  if (p >= 90) return "정면 응시가 매우 뛰어나요!";
+  if (p >= 70) return "정면 응시가 잘 유지되고 있어요.";
+  if (p >= 50) return "정면 응시가 보통 수준입니다.";
+  return "시선이 자주 흔들려 개선이 필요해요.";
+}
+
+function interpretPosture(score: number) {
+  if (score >= 0.9) return "자세가 매우 안정적이에요!";
+  if (score >= 0.75) return "자세가 비교적 안정적이에요.";
+  if (score >= 0.5) return "약간의 흔들림이 있어요.";
+  return "상당히 흔들립니다. 자세 안정이 필요해요.";
+}
+
+function interpretGesture(val: number) {
+  const p = val * 100;
+  if (p >= 40 && p <= 90) return "자연스러운 제스처 범위에 있어요.";
+  if (p < 40) return "제스처가 너무 적어서 딱딱해 보여요.";
+  return "제스처가 과도해 산만할 수 있어요.";
+}
+
+function interpretHead(yaw: number, roll: number) {
+  if (yaw < 15 && roll < 5) return "머리 움직임이 안정적이에요.";
+  if (yaw < 25) return "약간의 흔들림이 있어요.";
+  return "머리 흔들림이 커서 집중도가 떨어질 수 있어요.";
+}
+
+
 // ================================
 // ⚡ ResultsPage UI (리디자인)
 // ================================
@@ -220,7 +275,7 @@ export function ResultsPage({ user, results, onNavigate }: ResultsPageProps) {
           presentationId: presId,
         });
         setSummary(s);
-      } catch {}
+      } catch { }
     };
     loadSummary();
   }, [results, detail, user]);
@@ -424,107 +479,184 @@ export function ResultsPage({ user, results, onNavigate }: ResultsPageProps) {
               </div>
 
               {/* 시선 */}
-              <div className="p-6 rounded-xl bg-sky-50 border border-sky-200 shadow-md transition-transform hover:scale-105 hover:shadow-xl">
-                <h3 className="text-slate-900 text-lg font-semibold mb-2">
-                  시선 분포
-                </h3>
-                <p className="text-sm text-slate-700">
-                  정면 응시율:{" "}
-                  <b className="text-sky-700">
-                    {(video.gaze?.center_ratio ?? 0).toFixed(2)}
-                  </b>
+              <div className="p-6 rounded-xl bg-sky-50 border border-sky-200 shadow-md hover:scale-105 transition">
+                <h3 className="text-slate-900 text-lg font-semibold mb-2">시선 처리</h3>
+
+                {/* 변환된 값 */}
+                <p className="text-slate-800 text-xl font-bold">
+                  {toPercent(video.gaze?.center_ratio)}
                 </p>
-                <p className="text-sm text-slate-700">
-                  좌/중/우:{" "}
-                  {video.gaze?.distribution?.left ?? 0} /{" "}
+                <p className="text-slate-600 mb-2 text-sm">
+                  {interpretGaze(video.gaze?.center_ratio ?? 0)}
+                </p>
+
+                <p className="text-xs text-slate-500">
+                  좌/정면/우 : {video.gaze?.distribution?.left ?? 0} /{" "}
                   {video.gaze?.distribution?.center ?? 0} /{" "}
                   {video.gaze?.distribution?.right ?? 0}
                 </p>
-
-                {video.gaze?.interpretation && (
-                  <p className="mt-3 text-xs bg-white p-2 rounded border border-sky-100">
-                    {video.gaze.interpretation}
-                  </p>
-                )}
               </div>
 
               {/* 자세 */}
-              <div className="p-6 rounded-xl bg-emerald-50 border border-emerald-200 shadow-md transition-transform hover:scale-105 hover:shadow-xl">
-                <h3 className="text-slate-900 text-lg font-semibold mb-2">
-                  자세 안정성
-                </h3>
-                <p className="text-sm text-slate-700">
-                  안정성 점수:{" "}
-                  <b className="text-emerald-700">
-                    {(video.posture?.stability ?? 0).toFixed(3)}
-                  </b>
-                </p>
-                <p className="text-sm text-slate-700">
-                  기울기(Roll): {video.posture?.roll_mean ?? 0}
+              <div className="p-6 rounded-xl bg-emerald-50 border border-emerald-200 shadow-md hover:scale-105 transition">
+                <h3 className="text-slate-900 text-lg font-semibold mb-2">자세 안정성</h3>
+
+                <p className="text-emerald-700 text-xl font-bold">
+                  {toScore(video.posture?.stability)}점
                 </p>
 
-                {video.posture?.interpretation && (
-                  <p className="mt-3 text-xs bg-white p-2 rounded border border-emerald-100">
-                    {video.posture.interpretation}
-                  </p>
-                )}
+                <p className="text-sm text-slate-600 mb-2">
+                  {interpretPosture(video.posture?.stability ?? 0)}
+                </p>
+
+                <p className="text-xs text-slate-500">
+                  Roll 평균 : {video.posture?.roll_mean?.toFixed(1) ?? "-"}°
+                </p>
               </div>
 
               {/* 제스처 */}
-              <div className="p-6 rounded-xl bg-amber-50 border border-amber-200 shadow-md transition-transform hover:scale-105 hover:shadow-xl">
-                <h3 className="text-slate-900 text-lg font-semibold mb-2">
-                  제스처 / 손동작
-                </h3>
-                <p className="text-sm text-slate-700">
-                  움직임 에너지:{" "}
-                  <b className="text-amber-700">
-                    {video.gesture?.motion_energy ?? 0}
-                  </b>
-                </p>
-                <p className="text-sm text-slate-700">
-                  손 노출 비율:{" "}
-                  {(video.hand?.visibility_ratio ?? 0).toFixed(3)}
+              <div className="p-6 rounded-xl bg-amber-50 border border-amber-200 shadow-md hover:scale-105 transition">
+                <h3 className="text-slate-900 text-lg font-semibold mb-2">제스처 / 손동작</h3>
+
+                <p className="text-amber-700 text-xl font-bold">
+                  {toPercent(video.gesture?.motion_energy)}
                 </p>
 
-                {video.gesture?.interpretation && (
-                  <p className="mt-3 text-xs bg-white p-2 rounded border border-amber-100">
-                    {video.gesture.interpretation}
-                  </p>
-                )}
+                <p className="text-sm text-slate-600 mb-2">
+                  {interpretGesture(video.gesture?.motion_energy ?? 0)}
+                </p>
+
+                <p className="text-xs text-slate-500">
+                  손 노출 비율: {toPercent(video.hand?.visibility_ratio)}
+                </p>
               </div>
 
-              {/* 머리 방향 */}
-              <div className="p-6 rounded-xl bg-violet-50 border border-violet-200 shadow-md transition-transform hover:scale-105 hover:shadow-xl">
-                <h3 className="text-slate-900 text-lg font-semibold mb-2">
-                  머리 방향
-                </h3>
-                <p className="text-sm text-slate-700">
-                  좌우 회전(Yaw): {video.head?.yaw_mean ?? 0}
-                </p>
-                <p className="text-sm text-slate-700">
-                  기울기(Roll): {video.head?.roll_mean ?? 0}
-                </p>
+              {/* 머리 방향 (등급 + 해석 추가 버전) */}
+              <div className="p-6 rounded-xl bg-violet-50 border border-violet-200 shadow-md hover:scale-105 transition">
+                <h3 className="text-slate-900 text-lg font-semibold mb-2">머리 방향</h3>
 
-                {video.head?.interpretation && (
-                  <p className="mt-3 text-xs bg-white p-2 rounded border border-violet-100">
-                    {video.head.interpretation}
-                  </p>
-                )}
+                {/* 계산 부분 */}
+                {(() => {
+                  const yaw = video.head?.yaw_mean ?? 0;
+                  const roll = video.head?.roll_mean ?? 0;
+
+                  const getGrade = (value: number, type: "yaw" | "roll") => {
+                    if (type === "yaw") {
+                      if (value < 5) return { label: "Excellent", color: "text-green-600", desc: "정면 유지가 매우 안정적이에요." };
+                      if (value < 15) return { label: "Good", color: "text-blue-600", desc: "살짝 좌우로 움직였지만 자연스러운 범위예요." };
+                      if (value < 25) return { label: "Warning", color: "text-amber-600", desc: "고개가 자주 돌아가 집중도가 떨어질 수 있어요." };
+                      return { label: "Poor", color: "text-red-600", desc: "정면 유지가 어려워 시선 분산이 커요." };
+                    } else {
+                      if (value < 5) return { label: "Excellent", color: "text-green-600", desc: "상체 균형이 매우 안정적이에요." };
+                      if (value < 10) return { label: "Good", color: "text-blue-600", desc: "약간의 기울기지만 발표에 큰 문제 없어요." };
+                      if (value < 15) return { label: "Warning", color: "text-amber-600", desc: "기울어짐이 눈에 띄어 안정감이 떨어져요." };
+                      return { label: "Poor", color: "text-red-600", desc: "기울기가 커서 자세 안정성이 낮아져요." };
+                    }
+                  };
+
+                  const yawGrade = getGrade(yaw, "yaw");
+                  const rollGrade = getGrade(roll, "roll");
+
+                  return (
+                    <div className="space-y-4">
+
+                      {/* Yaw */}
+                      <div>
+                        <p className="text-slate-900 text-sm font-semibold mb-1">
+                          좌우 회전(Yaw)
+                        </p>
+                        <p className="text-slate-700 text-sm">
+                          평균 {yaw.toFixed(2)}°
+                          <span className={`ml-2 font-bold ${yawGrade.color}`}>
+                            ({yawGrade.label})
+                          </span>
+                        </p>
+                        <p className="text-xs text-slate-600 mt-1">
+                          {yawGrade.desc}
+                        </p>
+                      </div>
+
+                      {/* Roll */}
+                      <div>
+                        <p className="text-slate-900 text-sm font-semibold mb-1">
+                          기울기(Roll)
+                        </p>
+                        <p className="text-slate-700 text-sm">
+                          평균 {roll.toFixed(2)}°
+                          <span className={`ml-2 font-bold ${rollGrade.color}`}>
+                            ({rollGrade.label})
+                          </span>
+                        </p>
+                        <p className="text-xs text-slate-600 mt-1">
+                          {rollGrade.desc}
+                        </p>
+                      </div>
+
+                    </div>
+                  );
+                })()}
               </div>
 
-              {/* 메타데이터 */}
-              <div className="p-6 rounded-xl bg-slate-50 border border-slate-200 shadow-md transition-transform hover:scale-105 hover:shadow-xl">
-                <h3 className="text-slate-900 text-lg font-semibold mb-2">
-                  영상 정보
-                </h3>
-                <p className="text-sm text-slate-700">
-                  재생 시간: {(video.metadata?.duration_sec ?? 0).toFixed(1)}초
-                </p>
-                <p className="text-sm text-slate-700">FPS: {video.metadata?.fps ?? 0}</p>
-                <p className="text-sm text-slate-700">
-                  해상도: {video.metadata?.resolution?.[0] ?? "-"} ×{" "}
-                  {video.metadata?.resolution?.[1] ?? "-"}
-                </p>
+              {/* 영상 정보 */}
+              <div className="p-6 rounded-xl bg-slate-50 border border-slate-200 shadow-md hover:scale-105 transition">
+                <h3 className="text-slate-900 text-lg font-semibold mb-3">영상 정보</h3>
+
+                <div className="space-y-3">
+
+                  {/* ⏱ 재생 시간 */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center">
+                      ⏱
+                    </div>
+                    <div>
+                      <p className="text-slate-900 text-sm font-semibold">재생 시간</p>
+                      <p className="text-slate-700 text-sm">
+                        {(video.metadata?.duration_sec ?? 0).toFixed(1)}초
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 🎥 FPS */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center">
+                      🎥
+                    </div>
+                    <div>
+                      <p className="text-slate-900 text-sm font-semibold">FPS(프레임)</p>
+                      <p className="text-slate-700 text-sm">
+                        {video.metadata?.fps ?? 0} fps
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {video.metadata?.fps >= 30
+                          ? "부드러운 영상 품질"
+                          : "FPS가 낮아 분석 품질이 조금 떨어질 수 있어요"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 🖼 해상도 */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center">
+                      🖼️
+                    </div>
+                    <div>
+                      <p className="text-slate-900 text-sm font-semibold">해상도</p>
+                      <p className="text-slate-700 text-sm">
+                        {video.metadata?.resolution?.[0] ?? "-"} ×{" "}
+                        {video.metadata?.resolution?.[1] ?? "-"}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {(() => {
+                          const w = video.metadata?.resolution?.[0] ?? 0;
+                          if (w >= 1920) return "고화질 영상으로 분석 정확도가 높습니다.";
+                          if (w >= 1280) return "일반 화질 영상입니다.";
+                          return "저화질 영상으로 분석 정확도가 떨어질 수 있어요.";
+                        })()}
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
               </div>
             </div>
           </div>

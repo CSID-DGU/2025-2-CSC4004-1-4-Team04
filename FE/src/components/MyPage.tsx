@@ -44,66 +44,115 @@ export function MyPage({ user, onNavigate, onSelectPresentation }: MyPageProps) 
     }
   };
 
-  // Mock user data (fallback when no data)
   const userData = {
-    name: user?.name || '사용자',
-    email: user?.email || '',
-    photoURL: user?.photoURL,
-    totalPresentations: stats?.totalPresentations || 0,
-    averageScore: stats?.averageScore || 0,
-    improvement: stats?.improvement || 0,
-    recentPresentations:
-      presentations.length > 0
-        ? presentations.map((p) => {
-            const dateVal =
-              p.timestamp instanceof Date
-                ? p.timestamp.toISOString()
-                : p.timestamp?.toDate
-                ? p.timestamp.toDate().toISOString()
-                : new Date().toISOString();
-            return { ...p, date: dateVal };
-          })
-        : [],
-    // compute skill progress from recent presentations
-    // similarity: average of available similarity (0-100)
-    // pace: percent of presentations whose wpm is within recommended range (140-160)
-    // gaze/posture: average percent (0-100)
-    skillProgress: (() => {
-      const recent = presentations.slice(0, 10);
+  name: user?.name || '사용자',
+  email: user?.email || '',
+  photoURL: user?.photoURL,
 
-      // similarity
-      let sSum = 0, sCnt = 0;
-      // pace (within range count)
-      let paceIn = 0, paceCnt = 0;
-      // gaze/posture
-      let gSum = 0, gCnt = 0;
-      let pSum = 0, pCnt = 0;
+  totalPresentations: stats?.totalPresentations || 0,
+  averageScore: stats?.averageScore || 0,
 
-      recent.forEach((p) => {
-        const pm = (p as any).progressMetrics;
-        if (!pm) return;
+  // ⭐ 수정된 최근 성장률 계산: "지난 발표 대비 성장률"
+  improvement: (() => {
+    if (presentations.length < 2) return 0; // 발표가 1개 이하이면 0%
 
-        if (typeof pm.similarity === 'number') { sSum += pm.similarity; sCnt += 1; }
+    // 최신 발표 2개만 사용
+    const latest = presentations[0];
+    const prev = presentations[1];
 
-        const wpm = typeof pm.paceWpm === 'number' ? pm.paceWpm : (p.stt_analysis?.voice_analysis?.wpm ?? p.stt_analysis?.wpm ?? null);
-        const wpmNum = typeof wpm === 'string' ? Number(wpm) : wpm;
-        if (typeof wpmNum === 'number' && Number.isFinite(wpmNum)) {
-          paceCnt += 1;
-          if (wpmNum >= 140 && wpmNum <= 160) paceIn += 1;
-        }
+    const latestScore = latest.overallScore ?? 0;
+    const prevScore = prev.overallScore ?? 0;
 
-        if (typeof pm.gaze === 'number') { gSum += pm.gaze; gCnt += 1; }
-        if (typeof pm.posture === 'number') { pSum += pm.posture; pCnt += 1; }
-      });
+    if (prevScore === 0) return 0;
 
-      return {
-        similarity: sCnt ? Math.round(sSum / sCnt) : 0,
-        pace: paceCnt ? Math.round((paceIn / paceCnt) * 100) : 0,
-        gaze: gCnt ? Math.round(gSum / gCnt) : 0,
-        posture: pCnt ? Math.round(pSum / pCnt) : 0,
-      };
-    })(),
+    // 성장률 = (최근 - 이전) / 이전 * 100
+    const growth = ((latestScore - prevScore) / prevScore) * 100;
+
+    return Math.round(growth);
+  })(),
+
+  recentPresentations:
+    presentations.length > 0
+      ? presentations.map((p) => {
+          const dateVal =
+            p.timestamp instanceof Date
+              ? p.timestamp.toISOString()
+              : p.timestamp?.toDate
+              ? p.timestamp.toDate().toISOString()
+              : new Date().toISOString();
+          return { ...p, date: dateVal };
+        })
+      : [],
+
+  // ... (skillProgress 기존 그대로)
+  skillProgress: (() => {
+  // 전체 발표 데이터 사용
+  const all = presentations;
+
+  let simSum = 0, simCnt = 0;
+  let wpmSum = 0, wpmCnt = 0;
+  let gazeSum = 0, gazeCnt = 0;
+  let postSum = 0, postCnt = 0;
+
+  all.forEach((p) => {
+    const pm = (p as any).progressMetrics;
+    if (!pm) return;
+
+    // 1) 발표 자료 유사도
+    if (typeof pm.similarity === 'number') {
+      simSum += pm.similarity;
+      simCnt += 1;
+    }
+
+    // 2) 발표 속도 (평균 wpm 계산)
+    const wpm = typeof pm.paceWpm === "number"
+      ? pm.paceWpm
+      : p.stt_analysis?.voice_analysis?.wpm
+        ?? p.stt_analysis?.wpm
+        ?? null;
+
+    if (typeof wpm === "number") {
+      wpmSum += wpm;
+      wpmCnt += 1;
+    }
+
+    // 3) 시선 처리
+    if (typeof pm.gaze === "number") {
+      gazeSum += pm.gaze;
+      gazeCnt += 1;
+    }
+
+    // 4) 자세 안정성
+    if (typeof pm.posture === "number") {
+      postSum += pm.posture;
+      postCnt += 1;
+    }
+  });
+
+  // 계산된 평균들
+  const avgSimilarity = simCnt ? Math.round(simSum / simCnt) : 0;
+
+  const avgWpm = wpmCnt ? wpmSum / wpmCnt : null;
+
+  // 발표 속도 점수 변환
+  let paceScore = 0;
+  if (avgWpm !== null) {
+    const diff = Math.abs(avgWpm - 150); // 기준 150차이
+    paceScore = 100 - (diff / 150) * 100;
+    paceScore = Math.max(0, Math.min(100, Math.round(paceScore)));
+  }
+
+  const avgGaze = gazeCnt ? Math.round(gazeSum / gazeCnt) : 0;
+  const avgPosture = postCnt ? Math.round(postSum / postCnt) : 0;
+
+  return {
+    similarity: avgSimilarity,
+    pace: paceScore,
+    gaze: avgGaze,
+    posture: avgPosture,
   };
+})(),
+};
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -194,7 +243,7 @@ export function MyPage({ user, onNavigate, onSelectPresentation }: MyPageProps) 
                 <span className="text-white">최근 성장률</span>
               </div>
               <div className="text-4xl text-green-400 mb-2">+{userData.improvement}%</div>
-              <p className="text-sm text-white/60">지난 달 대비 향상되었습니다</p>
+              <p className="text-sm text-white/60">지난 발표 대비 향상되었습니다</p>
             </motion.div>
 
             <Button
