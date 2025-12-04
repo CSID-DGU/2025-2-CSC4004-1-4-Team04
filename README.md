@@ -45,7 +45,7 @@
 vercel 프론트 배포 주소:
 https://speakflows.vercel.app/
 
-render 백엔드 배포 주소:
+render 백엔드 배포 주소: (docs뒤에 붙여 fastapi 확인가능)
 https://two025-2-csc4004-1-4-team04.onrender.com/
 
 백엔드 서버 메모리 부족 
