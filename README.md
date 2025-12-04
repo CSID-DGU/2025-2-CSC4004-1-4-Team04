@@ -42,9 +42,15 @@
   음성 · 내용 · 영상 데이터를 실시간 분석하여 피드백 제공
 </p>
 
-
+vercel 프론트 배포 주소:
 https://speakflows.vercel.app/
 
+render 백엔드 배포 주소:
+https://two025-2-csc4004-1-4-team04.onrender.com/
+
+백엔드 서버 메모리 부족 
+<img width="1118" height="115" alt="image" src="https://github.com/user-attachments/assets/6f542b2c-f6ca-4555-b0a5-6e5fcbbda26a" />
+영상 분석을 진행하기 위한 최소 메모리 4~8GB 비용 85$~175$ 예상 , 예산 부족으로 실제 작업 처리는 로컬에서 현재 가능, 분석 결과 확인은 가능 
 
 ## 🛠 Tech Stack
 ### Frontend
