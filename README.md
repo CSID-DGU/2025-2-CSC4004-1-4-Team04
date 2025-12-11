@@ -1,5 +1,25 @@
 # 2025-2-CSC4004-1-4-Team04
 
+## 🎤 SpeakFlow – AI 발표 코치
+
+![image](https://github.com/user-attachments/assets/8ae6dfae-558a-4926-9cce-5351adb69792)
+
+- 프론트 배포 주소: https://speakflows.vercel.app/
+- 백엔드 배포 주소: https://two025-2-csc4004-1-4-team04.onrender.com/
+- (docs뒤에 붙여 fastapi 확인가능) 백엔드 서버 메모리 부족 
+<img width="1118" height="115" alt="image" src="https://github.com/user-attachments/assets/6f542b2c-f6ca-4555-b0a5-6e5fcbbda26a" />
+영상 분석을 진행하기 위한 최소 메모리 4~8GB 비용 85$~175$ 예상 , 예산 부족으로 실제 작업 처리는 로컬에서 현재 가능, 분석 결과 확인은 가능 
+
+<br>
+
+## 프로젝트 소개
+
+- SpeakFlow는 발표자의 시선, 자세, 음성, 노리 구조를 다각도로 분석하여 사용자의 개선 방향을 명확하게 제시하는 웹 기반 자동화 코칭 플랫폼입니다
+- 기존의 발표 연습 서비스가 단순 녹음이나 텍스트 분석에 그치는 한계를 극복하기 위해, 본 프로젝트는 AI 기술을 활용하여 발표자의 비언어적 행동과 언어적 전달력을 통합적으로 진단합니다.
+- 최종적으로 사용자에게 정량화된 데이터와 LLM 기반의 개선 피드백을 제공합니다.
+
+<br>
+
 ## 👨‍💻 팀원 소개
 
 <table>
@@ -33,24 +53,7 @@
 </table>
 <hr/>
 <br>
-<br>
-
-<h1 align="center">🎤 SpeakFlow – AI 발표 코치</h1>
-
-<p align="center">
-  AI 기반 발표 분석 플랫폼<br/>
-  음성 · 내용 · 영상 데이터를 실시간 분석하여 피드백 제공
-</p>
-
-vercel 프론트 배포 주소:
-https://speakflows.vercel.app/
-
-render 백엔드 배포 주소: 
-https://two025-2-csc4004-1-4-team04.onrender.com/
-(docs뒤에 붙여 fastapi 확인가능)
-백엔드 서버 메모리 부족 
-<img width="1118" height="115" alt="image" src="https://github.com/user-attachments/assets/6f542b2c-f6ca-4555-b0a5-6e5fcbbda26a" />
-영상 분석을 진행하기 위한 최소 메모리 4~8GB 비용 85$~175$ 예상 , 예산 부족으로 실제 작업 처리는 로컬에서 현재 가능, 분석 결과 확인은 가능 
+<br> 
 
 ## 🛠 Tech Stack
 ### Frontend
