@@ -80,6 +80,33 @@
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=Vercel&logoColor=white"/>
 </p>
 
+<br>
+
+## 프로젝트 구조
+
+```
+├── BE
+│   ├── .python-version
+│   ├── .python-version 2
+│   ├── combined_feedback_generator.py
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── result_summary_api.py
+│   ├── stt_processor.py
+│   └── video_analyzer.py
+├── FE
+│   ├── build
+│   ├── node_modules
+│   ├── node_modules 2
+│   ├── src
+│       ├── App.tsx
+│       └── main.tsx
+├── .gitignore
+├── deployment.md
+└── README.md
+```
+<br>
+
 ## 🚀 실행 방법 (로컬)
 1) 코드 받기  
 ```bash
