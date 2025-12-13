@@ -171,43 +171,25 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 ## 페이지별 설명
 
-<br>
-
-[메인 홈]
-
-<br>
-
+### [메인 홈]
 ![image](https://github.com/user-attachments/assets/8ae6dfae-558a-4926-9cce-5351adb69792)
 
 
 <br>
 
 
-[발표 스크립트 선택]
-
-<br>
-
+### [발표 스크립트 선택]
 <img width="1210" height="650" alt="image" src="https://github.com/user-attachments/assets/f0106ec7-3959-48b8-8cb2-52e99eac77c8" />
 
-
 <br>
 
-
-[발표 영상 녹화 영상 업로드]
-
-<br>
+### [발표 영상 녹화 영상 업로드]
 <img width="1214" height="613" alt="image" src="https://github.com/user-attachments/assets/8cbc523c-1641-460d-95eb-7edac2288cac" />
 
-
 <br>
 
-
-[분석 결과]
-
--  본 시스템은 음성, 영상, 내용/논리 분석 결과를 종합하여 발표에 대한 종합 점수(100점 만점)를 산출한다.
-
-<br>
-
+### [분석 결과]
+-  본 시스템은 음성, 영상, 내용/논리 분석 결과를 종합하여 발표에 대한 종합 점수(100점 만점)를 산출한다.<br>
 <img width="694" height="287" alt="image" src="https://github.com/user-attachments/assets/0eca2aa4-5e70-4970-b61d-b0fde9e1e384" />
 
 <br>
