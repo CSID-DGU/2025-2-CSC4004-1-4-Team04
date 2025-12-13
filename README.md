@@ -189,10 +189,13 @@ npm run dev -- --host 0.0.0.0 --port 5173
 <br>
 
 ### [분석 결과]
--  본 시스템은 음성, 영상, 내용/논리 분석 결과를 종합하여 발표에 대한 종합 점수(100점 만점)를 산출한다.<br>
+-  본 시스템은 음성, 영상, 내용/논리 분석 결과를 종합하여 발표에 대한 종합 점수(100점 만점)를 산출한다.
+
+<br>
 <img width="694" height="287" alt="image" src="https://github.com/user-attachments/assets/0eca2aa4-5e70-4970-b61d-b0fde9e1e384" />
 
 <br>
+
 ### [음성분석 결과]
 <img width="737" height="360" alt="image" src="https://github.com/user-attachments/assets/c2f7ea61-7b98-4de4-a4c7-b712e77aee08" />
 1) 불필요한 음성
@@ -223,7 +226,7 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 <br>
 
-### [음성분석 결과]
+### [내용 / 논리 분석 결과결과]
 - 내용 / 논리 분석은 발표 대본과 실제 발화 간의 일치도 및 논리 흐름을 평가한다.
 
 <br>
@@ -240,7 +243,7 @@ npm run dev -- --host 0.0.0.0 --port 5173
   - “대본을 충실히 따르고 있음 으로 ” 해석
 
 2) 대본 유사도 낮은 경우
--분석 예시
+- 분석 예시
   - 핵심 문장의 변경 또는 누락 발생
   - 문장 순서 변경으로 인한 흐름 붕괴
   - 유사도 점수 하락
@@ -253,6 +256,5 @@ npm run dev -- --host 0.0.0.0 --port 5173
 ### [영상분석 결과]
 - 영상 분석은 발표자의 비언어적 표현 시선 자세 제스처 머리 ( , , , 방향 을) 정량적으로 평가한다.
 - MediaPipe 와 OpenCV 기반 프레임 분석을 통해 다음 항목들이 산출된다.
-
-- 
+<br>
 <img width="804" height="823" alt="image" src="https://github.com/user-attachments/assets/74b32360-8280-4fe9-9133-cf7d6417e573" />
