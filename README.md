@@ -84,6 +84,14 @@
   <img src="https://img.shields.io/badge/GPT-4-FFCA28?style=for-the-badge&"/>
   <img src="https://img.shields.io/badge/OpenAI Whisper-0055FF?style=for-the-badge&logoColor=white"/>
 </p>
+
+### Infra & DB
+<p>
+  <img src="https://img.shields.io/badge/Docker-#2496ED?style=for-the-badge&logo=Docker&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Render-##000000?style=for-the-badge&logo=Render&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Firebase-##DD2C00?style=for-the-badge&logo=Firebase&logoColor=white"/>
+</p>
+
 <br>
 
 ## 프로젝트 구조
