@@ -314,7 +314,13 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 <br>
 
-<img width="379" height="623" alt="image" src="https://github.com/user-attachments/assets/8c19c1b2-919d-4d49-ba29-609b428cd375" />
+<img width="382" height="486" alt="image" src="https://github.com/user-attachments/assets/0c64eddc-1714-4703-9eb1-267b65ae9669" />
 <img width="382" height="580" alt="image" src="https://github.com/user-attachments/assets/51e64464-d348-454d-bed1-3856ba36f7ed" />
 
+<br>
 
+### [마이페이지]
+- 마이페이지의 스킬 진행도는 사용자의 발표 분석 결과를 기반으로, 발표 역량을 항목별로 정규화하여 백분율 형태로 (%) 시각화한 지표이다.
+- 각 스킬은 개별 분석 모듈의 정량적 결과를 활용하여 산출되며 사용자는 , 자신의 강점과 개선 영역을 직관적으로 확인할 수 있다.
+<br>
+<img width="753" height="752" alt="image" src="https://github.com/user-attachments/assets/ddac84da-36b9-4b31-89d2-c935ef0ccb95" />
