@@ -61,7 +61,8 @@
 ## 🛠 Tech Stack
 ### Frontend
 <p>
-  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=black"/>
+  
+  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=blackreact"/>
   <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=Vite&logoColor=white"/>
   <img src="https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=TailwindCSS&logoColor=white"/>
   <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=Firebase&logoColor=black"/>
@@ -134,6 +135,11 @@
 * 발표의 논리적 구조(서론-본론-결론)를 파악하고 설득력을 강화할 수 있는 피드백을 생성합니다.
 
 <br> 
+
+## 구현
+본 시스템은 대용량 영상 데이터를 효율적으로 처리하기 위해 비동기 파이프라인
+(Asynchronous Pipeline) 구조를 채택하였다. 전체 분석 과정은 크게 영상 처리, 음성 처리, 그리고 피드백 생성의 3단계로 병렬 수행되며, 그 상세 흐름은 다음 그림과 같다.
+<img width="914" height="980" alt="image" src="https://github.com/user-attachments/assets/ceb34c95-f1cb-4b5f-a41b-428aa2196501" />
 
 ## 🚀 실행 방법 (로컬)
 1) 코드 받기  
