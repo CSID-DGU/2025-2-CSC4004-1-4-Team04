@@ -98,7 +98,7 @@
 │   ├── build
 │   ├── node_modules
 │   ├── node_modules 2
-│   ├── src
+│   └── src
 │       ├── App.tsx
 │       └── main.tsx
 ├── .gitignore
