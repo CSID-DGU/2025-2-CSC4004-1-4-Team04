@@ -167,6 +167,8 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 ## 페이지별 설명
 [메인 홈]
+<br>
+
 ![image](https://github.com/user-attachments/assets/8ae6dfae-558a-4926-9cce-5351adb69792)
 
 
@@ -174,6 +176,8 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 
 [발표 스크립트 선택]
+<br>
+
 <img width="1210" height="650" alt="image" src="https://github.com/user-attachments/assets/f0106ec7-3959-48b8-8cb2-52e99eac77c8" />
 
 
@@ -181,6 +185,7 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 
 [발표 영상 녹화 영상 업로드]
+<br>
 <img width="1214" height="613" alt="image" src="https://github.com/user-attachments/assets/8cbc523c-1641-460d-95eb-7edac2288cac" />
 
 
@@ -188,35 +193,39 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 
 [분석 결과]
-- 본 시스템은 음성, 영상, 내용/논리 분석 결과를 종합하여 발표에 대한 종합 점수(100점 만점)를 산출한다.
-<img width="798" height="339" alt="image" src="https://github.com/user-attachments/assets/244fe82d-1486-4d96-bd12-6cc75a54043c" />
+
+-  본 시스템은 음성, 영상, 내용/논리 분석 결과를 종합하여 발표에 대한 종합 점수(100점 만점)를 산출한다.
+
+<br>
+
+<img width="694" height="287" alt="image" src="https://github.com/user-attachments/assets/0eca2aa4-5e70-4970-b61d-b0fde9e1e384" />
 
 <br>
 
 1) 불필요한 음성
-의미: 발표 중 반복적으로 등장하는 추임새 예 음 어 그니까 등 의 ( : “ ”, “ ”, “ ” ) 사용 횟수
-산출 방법: STT (stt_analysis.full_text) 결과 텍스트 에서 사전에 정의된 추임새 패턴 목록과 일치하는 단어를 탐지하여 단순 횟수로 집계
-표시 방식: 총 발생 횟수 (회)
+- 의미: 발표 중 반복적으로 등장하는 추임새 예 음 어 그니까 등 의 ( : “ ”, “ ”, “ ” ) 사용 횟수
+- 산출 방법: STT (stt_analysis.full_text) 결과 텍스트 에서 사전에 정의된 추임새 패턴 목록과 일치하는 단어를 탐지하여 단순 횟수로 집계
+- 표시 방식: 총 발생 횟수 (회)
 
 <br>
 
 2) 말하기 속도 (WPM)
-의미: (Words Per Minute) 분당 발화 단어 수
-산출 방법: WPM = ( / 총 단어 수 전체 발화 시간 ( )) * 60 초(stt_analysis.word_count, stt_analysis.duration_sec ) 활용
-평가 기준: 140~160 WPM: , 권장 범위 과도하게 느리거나 빠른 경우 전달력 저하로 판단
+- 의미: (Words Per Minute) 분당 발화 단어 수
+- 산출 방법: WPM = ( / 총 단어 수 전체 발화 시간 ( )) * 60 초(stt_analysis.word_count, stt_analysis.duration_sec ) 활용
+- 평가 기준: 140~160 WPM: , 권장 범위 과도하게 느리거나 빠른 경우 전달력 저하로 판단
 
 <br>
 
 3) 말 사이 공백 (침묵)
-의미: 발화 중 일정 시간 이상 이어지는 무음 구간
-산출 방법:연속된 단어 간 시간 차 가 (end start) ( 2 ) → 임계값 기본 초 이상인 경우를 긴 침묵 이벤트로 기록
-표시 방식: 긴 침묵 발생 횟수 (회)
+- 의미: 발화 중 일정 시간 이상 이어지는 무음 구간
+- 산출 방법:연속된 단어 간 시간 차 가 (end start) ( 2 ) → 임계값 기본 초 이상인 경우를 긴 침묵 이벤트로 기록
+- 표시 방식: 긴 침묵 발생 횟수 (회)
 
 <br>
 
 4) 말끝 흐림
-의미: 문장을 명확하게 끝내지 못하고 흐리는 발화 습관
-산출 방법: GPT 기반 언어 패턴 분석 또는 정규식 기반 백업 로직을 통해 말끝 흐림 표현 탐지
-표시 방식: 총 발생 횟수 (회)
+- 의미: 문장을 명확하게 끝내지 못하고 흐리는 발화 습관
+- 산출 방법: GPT 기반 언어 패턴 분석 또는 정규식 기반 백업 로직을 통해 말끝 흐림 표현 탐지
+- 표시 방식: 총 발생 횟수 (회)
 
-<img width="852" height="422" alt="image" src="https://github.com/user-attachments/assets/3128906c-fca2-400f-a78c-9a181cd95712" />
+<img width="737" height="360" alt="image" src="https://github.com/user-attachments/assets/c2f7ea61-7b98-4de4-a4c7-b712e77aee08" />
