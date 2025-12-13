@@ -103,7 +103,10 @@
 ├── deployment.md
 └── README.md
 ```
+
+
 <br>
+
 
 ## ✨ Key Features
 본 서비스는 3가지 핵심 분석 모듈을 통해 발표를 진단합니다.
@@ -120,12 +123,18 @@
 * GPT API를 활용하여 발표 대본과 실제 발화 내용의 일치도를 분석합니다.
 * 발표의 논리적 구조(서론-본론-결론)를 파악하고 설득력을 강화할 수 있는 피드백을 생성합니다.
 
+
 <br> 
+
 
 ## 구현
 본 시스템은 대용량 영상 데이터를 효율적으로 처리하기 위해 비동기 파이프라인
 (Asynchronous Pipeline) 구조를 채택하였다. 전체 분석 과정은 크게 영상 처리, 음성 처리, 그리고 피드백 생성의 3단계로 병렬 수행되며, 그 상세 흐름은 다음 그림과 같다.
 <img width="914" height="980" alt="image" src="https://github.com/user-attachments/assets/ceb34c95-f1cb-4b5f-a41b-428aa2196501" />
+
+
+<br>
+
 
 ## 🚀 실행 방법 (로컬)
 1) 코드 받기  
@@ -160,17 +169,23 @@ npm run dev -- --host 0.0.0.0 --port 5173
 [메인 홈]
 ![image](https://github.com/user-attachments/assets/8ae6dfae-558a-4926-9cce-5351adb69792)
 
+
 <br>
+
 
 [발표 스크립트 선택]
 <img width="1210" height="650" alt="image" src="https://github.com/user-attachments/assets/f0106ec7-3959-48b8-8cb2-52e99eac77c8" />
 
+
 <br>
+
 
 [발표 영상 녹화 영상 업로드]
 <img width="1214" height="613" alt="image" src="https://github.com/user-attachments/assets/8cbc523c-1641-460d-95eb-7edac2288cac" />
 
+
 <br>
+
 
 [분석 결과]
 - 본 시스템은 음성, 영상, 내용/논리 분석 결과를 종합하여 발표에 대한 종합 점수(100점 만점)를 산출한다.
