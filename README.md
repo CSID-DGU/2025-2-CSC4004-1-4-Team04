@@ -72,7 +72,6 @@
 <p>
   <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white"/>
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=Firebase&logoColor=black"/>
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=Vercel&logoColor=white"/>
 </p>
 
@@ -88,7 +87,7 @@
 ### Infra & DB
 <p>
   <img src="https://img.shields.io/badge/docker-%232496ED.svg?&style=for-the-badge&logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/Render-##000000?style=for-the-badge&logo=render&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Render-##000000.svg?style=for-the-badge&logo=render&logoColor=white"/>
   <img src="https://img.shields.io/badge/firebase-%23FFCA28.svg?&style=for-the-badge&logo=firebase&logoColor=black" />
 </p>
 
