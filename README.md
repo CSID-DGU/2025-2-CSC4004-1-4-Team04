@@ -78,10 +78,12 @@
 
 
 ### AI / ML 
-  <img src="https://img.shields.io/badge/MediaPipe-FF5722?style=for-the-badge&logo=Google&logoColor=white"/>
-  <img src="https://img.shields.io/badge/OpenCV-EE4C2C?style=for-the-badge&logo=PyTorch&logoColor=white"/>
-  <img src="https://img.shields.io/badge/GPT-4-FFCA28?style=for-the-badge&logo=Firebase&logoColor=black"/>
-  <img src="https://img.shields.io/badge/OpenAI Whisper-0055FF?style=for-the-badge&logo=Framer&logoColor=white"/>
+<p>
+  <img src="https://img.shields.io/badge/MediaPipe-FF5722?style=for-the-badge&logo=mediapipe&logoColor=white"/>
+  <img src="https://img.shields.io/badge/OpenCV-EE4C2C?style=for-the-badge&logo=opencv&logoColor=white"/>
+  <img src="https://img.shields.io/badge/GPT-4-FFCA28?style=for-the-badge&logoColor=black"/>
+  <img src="https://img.shields.io/badge/OpenAI Whisper-0055FF?style=for-the-badge&logoColor=white"/>
+</p>
 <br>
 
 ## 프로젝트 구조
