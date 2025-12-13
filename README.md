@@ -304,3 +304,17 @@ npm run dev -- --host 0.0.0.0 --port 5173
   - 재생 시간 (metadata.duration_sec)
   - FPS (metadata.fps)
   - 해상도 (metadata.resolution)
+
+<br>
+
+### [최종 피드백]
+- 최종 피드백은 음성 영상 논리 , 분석 결과를 종합하여 AI 기반 종합 코멘트로 제공된다.
+- 제공 형태: 웹 화면 요약 피드백 / PDF  리포트 (다운로드 가능)
+<img width="1210" height="484" alt="image" src="https://github.com/user-attachments/assets/81c4a92f-dee8-40ed-9f68-7b4b1ec061b1" />
+
+<br>
+
+<img width="379" height="623" alt="image" src="https://github.com/user-attachments/assets/8c19c1b2-919d-4d49-ba29-609b428cd375" />
+<img width="382" height="580" alt="image" src="https://github.com/user-attachments/assets/51e64464-d348-454d-bed1-3856ba36f7ed" />
+
+
