@@ -251,7 +251,7 @@ npm run dev -- --host 0.0.0.0 --port 5173
   - 유사도 점수 하락
   - 차이 문장을 구체적으로 나열하여 피드백 제공
 
--산출 데이터: logic_similarity, logic_feedback (문장 단위 차이 설명 배열)
+- 산출 데이터: logic_similarity, logic_feedback (문장 단위 차이 설명 배열)
 
 <br>
 
@@ -260,7 +260,9 @@ npm run dev -- --host 0.0.0.0 --port 5173
 - MediaPipe 와 OpenCV 기반 프레임 분석을 통해 다음 항목들이 산출된다.
 <br>
 <img width="804" height="823" alt="image" src="https://github.com/user-attachments/assets/74b32360-8280-4fe9-9133-cf7d6417e573" />
+
 <br>
+
 1) 시선 처리
 - 의미: 발표 중 카메라(정면)를 응시하는 비율 및 시선 분포
 - 산출 방법: FaceMesh 눈 랜드마크를 기반으로 시선 중심 좌표를 계산하여 다음과 같은 항목 산출
