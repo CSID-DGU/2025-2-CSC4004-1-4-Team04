@@ -87,9 +87,9 @@
 
 ### Infra & DB
 <p>
-  <img src="https://img.shields.io/badge/firebase-#2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
+  <img src="https://img.shields.io/badge/docker-%232496ED.svg?&style=for-the-badge&logo=docker&logoColor=white" />
   <img src="https://img.shields.io/badge/Render-##000000?style=for-the-badge&logo=render&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Firebase-##DD2C00?style=for-the-badge&logo=firebase&logoColor=white"/>
+  <img src="https://img.shields.io/badge/firebase-%23FFCA28.svg?&style=for-the-badge&logo=firebase&logoColor=black" />
 </p>
 
 <br>
