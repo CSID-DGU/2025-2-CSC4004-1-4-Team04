@@ -198,6 +198,8 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 ### [음성분석 결과]
 <img width="737" height="360" alt="image" src="https://github.com/user-attachments/assets/c2f7ea61-7b98-4de4-a4c7-b712e77aee08" />
+<br>
+
 1) 불필요한 음성
 - 의미: 발표 중 반복적으로 등장하는 추임새 예 음 어 그니까 등 의 ( : “ ”, “ ”, “ ” ) 사용 횟수
 - 산출 방법: STT (stt_analysis.full_text) 결과 텍스트 에서 사전에 정의된 추임새 패턴 목록과 일치하는 단어를 탐지하여 단순 횟수로 집계
@@ -258,3 +260,45 @@ npm run dev -- --host 0.0.0.0 --port 5173
 - MediaPipe 와 OpenCV 기반 프레임 분석을 통해 다음 항목들이 산출된다.
 <br>
 <img width="804" height="823" alt="image" src="https://github.com/user-attachments/assets/74b32360-8280-4fe9-9133-cf7d6417e573" />
+<br>
+1) 시선 처리
+- 의미: 발표 중 카메라(정면)를 응시하는 비율 및 시선 분포
+- 산출 방법: FaceMesh 눈 랜드마크를 기반으로 시선 중심 좌표를 계산하여 다음과 같은 항목 산출
+  - 정면 응시 비율(center_ratio)
+  - 좌 중앙 우 / / (distribution) 시선 분포
+  - 초당 시선 이동 빈도(movement_rate_per_sec)
+- 점수 반영: scores.video_gaze
+
+<br>
+
+2) 자세 안정성
+- 의미: 상체 흔들림 및 균형 유지 정도
+- 산출 방법: Pose 랜드마크 기반으로 어깨 중심 좌표의 표준편차와 기울기 평균을 계산하여 안정성 지표(stability) 산출
+- 점수 반영: scores.video_posture
+
+<br>
+
+3) 제스처 / 손동작
+- 의미: 발표 중 손동작 및 몸짓 사용의 적절성
+- 산출 방법:
+  - 프레임 간 관절 좌표 변화량을 기반으로 움직임 에너지(motion_energy) 계산
+  - 손 랜드마크 검출 여부를 통해 손 노출 비율(visibility_ratio) 산출
+- 표시 방식: (%) + 퍼센트 또는 수치 평가 문구
+- 점수 반영: scores.video_gesture
+
+<br>
+
+4) 머리 방향
+- 의미: 발표 중 머리의 좌우 회전 및 (Yaw) (Roll) 기울기
+- 산출 방법:
+  - 얼굴 랜드마크를 이용해 평균 회전 각도 계산
+  - (Roll < 5°, Yaw < 15° 기준으로 안정성 평가)
+- 활용: 시선 분배 안정성 보조 지표
+
+<br>
+
+5) 영상 정보
+- 제공 항목:
+  - 재생 시간 (metadata.duration_sec)
+  - FPS (metadata.fps)
+  - 해상도 (metadata.resolution)
