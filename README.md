@@ -165,8 +165,16 @@ npm run dev -- --host 0.0.0.0 --port 5173
 - 백엔드 Swagger: http://localhost:8000/docs  
 - 프론트: http://localhost:5173(프론트로 접속해서 테스트 가능)
 
+
+<br>
+
+
 ## 페이지별 설명
+
+<br>
+
 [메인 홈]
+
 <br>
 
 ![image](https://github.com/user-attachments/assets/8ae6dfae-558a-4926-9cce-5351adb69792)
@@ -176,6 +184,7 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 
 [발표 스크립트 선택]
+
 <br>
 
 <img width="1210" height="650" alt="image" src="https://github.com/user-attachments/assets/f0106ec7-3959-48b8-8cb2-52e99eac77c8" />
@@ -185,6 +194,7 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 
 [발표 영상 녹화 영상 업로드]
+
 <br>
 <img width="1214" height="613" alt="image" src="https://github.com/user-attachments/assets/8cbc523c-1641-460d-95eb-7edac2288cac" />
 
