@@ -95,17 +95,45 @@
 │   ├── stt_processor.py
 │   └── video_analyzer.py
 ├── FE
-│   ├── build
 │   ├── node_modules
-│   ├── node_modules 2
-│   └── src
-│       ├── App.tsx
-│       └── main.tsx
+│   ├── src
+│   │   ├── apis
+│   │   ├── components
+│   │   ├── lib
+│   │   ├── mocks
+│   │   ├── styles
+│   │   ├── App.tsx
+│   │   ├── index.css
+│   │   └── main.tsx
+│   ├── env.d.ts
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── tailwind.config.ts
+│   ├── vite-env.d.ts
+│   └── vite.config.ts
 ├── .gitignore
 ├── deployment.md
 └── README.md
 ```
 <br>
+
+## ✨ Key Features
+[cite_start]본 서비스는 3가지 핵심 분석 모듈**을 통해 발표를 진단합니다.
+
+### 1. 👁️ 영상 분석 (Vision AI)
+* MediaPipe를 활용하여 발표자의 시선 처리, 자세 안정성, 제스처 사용 빈도를 프레임 단위로 분석합니다.
+* 시선이 분산되거나 불안정한 자세를 취하는 구간을 히트맵과 좌표 변화로 감지합니다.
+
+### 2. 🎙️ 음성 분석 (Audio AI)
+* OpenAI Whisper 모델을 사용하여 발표 내용을 텍스트로 변환(STT)합니다.
+* 발화 속도(WPM), 무음 구간(Pause), 불필요한 추임새(Filler words)를 탐지하여 전달력을 평가합니다.
+
+### 3. 🧠 내용 및 논리 분석 (Logic AI)
+* GPT API를 활용하여 발표 대본과 실제 발화 내용의 일치도를 분석합니다.
+* 발표의 논리적 구조(서론-본론-결론)를 파악하고 설득력을 강화할 수 있는 피드백을 생성합니다.
+
+<br> 
 
 ## 🚀 실행 방법 (로컬)
 1) 코드 받기  
