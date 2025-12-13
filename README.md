@@ -59,37 +59,13 @@
 <br>
 
 ## 🛠 Tech Stack
-### Frontend
-<p>
-  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=blackreact"/>
-  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=Vite&logoColor=white"/>
-  <img src="https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=TailwindCSS&logoColor=white"/>
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=TypeScript&logoColor=white"/>
-</p>
-
-
-### Backend 
-<p>
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=Vercel&logoColor=white"/>
-</p>
-
-
-### AI / ML 
-<p>
-  <img src="https://img.shields.io/badge/MediaPipe-FF5722?style=for-the-badge&logo=mediapipe&logoColor=white"/>
-  <img src="https://img.shields.io/badge/OpenCV-EE4C2C?style=for-the-badge&logo=opencv&logoColor=white"/>
-  <img src="https://img.shields.io/badge/GPT-4-FFCA28?style=for-the-badge&"/>
-  <img src="https://img.shields.io/badge/OpenAI Whisper-0055FF?style=for-the-badge&logoColor=white"/>
-</p>
-
-### Infra & DB
-<p>
-  <img src="https://img.shields.io/badge/docker-%232496ED.svg?&style=for-the-badge&logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/Render-##000000.svg&logoColor=white"/>
-  <img src="https://img.shields.io/badge/firebase-%23FFCA28.svg?&style=for-the-badge&logo=firebase&logoColor=black" />
-</p>
+| Category | Stack |
+| :--- | :--- |
+| **Frontend** | React, TypeScript, Tailwind CSS, Vite |
+| **Backend** | Python 3.11, FastAPI, Uvicorn |
+| **AI / ML** | OpenAI Whisper, MediaPipe, OpenCV, GPT-4 |
+| **Infra & DB** | Docker, Render, Firebase Firestore |
+| **Tools** | FFmpeg, GitHub, Git |
 
 <br>
 
