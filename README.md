@@ -193,7 +193,8 @@ npm run dev -- --host 0.0.0.0 --port 5173
 <img width="694" height="287" alt="image" src="https://github.com/user-attachments/assets/0eca2aa4-5e70-4970-b61d-b0fde9e1e384" />
 
 <br>
-
+### [음성분석 결과]
+<img width="737" height="360" alt="image" src="https://github.com/user-attachments/assets/c2f7ea61-7b98-4de4-a4c7-b712e77aee08" />
 1) 불필요한 음성
 - 의미: 발표 중 반복적으로 등장하는 추임새 예 음 어 그니까 등 의 ( : “ ”, “ ”, “ ” ) 사용 횟수
 - 산출 방법: STT (stt_analysis.full_text) 결과 텍스트 에서 사전에 정의된 추임새 패턴 목록과 일치하는 단어를 탐지하여 단순 횟수로 집계
@@ -220,4 +221,38 @@ npm run dev -- --host 0.0.0.0 --port 5173
 - 산출 방법: GPT 기반 언어 패턴 분석 또는 정규식 기반 백업 로직을 통해 말끝 흐림 표현 탐지
 - 표시 방식: 총 발생 횟수 (회)
 
-<img width="737" height="360" alt="image" src="https://github.com/user-attachments/assets/c2f7ea61-7b98-4de4-a4c7-b712e77aee08" />
+<br>
+
+### [음성분석 결과]
+- 내용 / 논리 분석은 발표 대본과 실제 발화 간의 일치도 및 논리 흐름을 평가한다.
+
+<br>
+
+<img width="873" height="528" alt="image" src="https://github.com/user-attachments/assets/fb8f0688-79b6-4c6b-a518-c3f4a69e2c6b" />
+
+<br>
+
+1) 대본 유사도 높은 경우
+- 분석 예시
+  - 발표 대본과 실제 발화 내용이 대부분 일치
+  - 문장 구조 및 핵심 키워드 변화가 거의 없음
+  - 유사도 점수 80~100% 수준
+  - “대본을 충실히 따르고 있음 으로 ” 해석
+
+2) 대본 유사도 낮은 경우
+-분석 예시
+  - 핵심 문장의 변경 또는 누락 발생
+  - 문장 순서 변경으로 인한 흐름 붕괴
+  - 유사도 점수 하락
+  - 차이 문장을 구체적으로 나열하여 피드백 제공
+
+-산출 데이터: logic_similarity, logic_feedback (문장 단위 차이 설명 배열)
+
+<br>
+
+### [영상분석 결과]
+- 영상 분석은 발표자의 비언어적 표현 시선 자세 제스처 머리 ( , , , 방향 을) 정량적으로 평가한다.
+- MediaPipe 와 OpenCV 기반 프레임 분석을 통해 다음 항목들이 산출된다.
+
+- 
+<img width="804" height="823" alt="image" src="https://github.com/user-attachments/assets/74b32360-8280-4fe9-9133-cf7d6417e573" />
