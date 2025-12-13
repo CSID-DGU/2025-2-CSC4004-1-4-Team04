@@ -80,10 +80,6 @@
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=Vercel&logoColor=white"/>
 </p>
 
-### AI / ML | OpenAI Whisper, MediaPipe, OpenCV, GPT-4 |
-### Infra & DB | Docker, Render, Firebase Firestore |
-### Tools | FFmpeg, GitHub, Git |
-
 <br>
 
 ## 프로젝트 구조
