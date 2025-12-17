@@ -1,5 +1,9 @@
 # 2025-2-CSC4004-1-4-Team04
 
+## 시연영상
+https://www.youtube.com/watch?v=jIVdIt3eViM
+
+
 ## 🎤 SpeakFlow – AI 발표 코치
 
 ![image](https://github.com/user-attachments/assets/8ae6dfae-558a-4926-9cce-5351adb69792)
